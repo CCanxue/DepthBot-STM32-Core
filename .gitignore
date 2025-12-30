@@ -1,5 +1,5 @@
 Thesis/
-Pin_nam/
+Pin_num/
 .vscode/
 # 忽略编译生成的库文件
 *.a
@@ -11,3 +11,4 @@ Output/
 *.d
 *.crf
 *.axf
+ReadME.md
