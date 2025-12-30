@@ -1,0 +1,532 @@
+
+    <html lang="zh-CN">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+      <body class="nodata " style="">    
+     
+        <main style="width:100%">  
+        <div class="blog-content-box"> 
+            <div class="article-title-box">
+                <h1 class="title-article" id="articleContentId">Qt5+STM32F407+步进电机 | 通过电脑控制步进电机实现：6+2通道、速度可变、运动精确步数的教程——基础知识（2/4）</h1>
+            </div><div id="article_content" class="article_content clearfix">
+        <link rel="stylesheet" href="https://csdnimg.cn/release/blogv2/dist/mdeditor/css/editerView/kdoc_html_views-1a98987dfd.css">
+        <link rel="stylesheet" href="https://csdnimg.cn/release/blogv2/dist/mdeditor/css/editerView/ck_htmledit_views-044f2cf1dc.css">
+                <div id="content_views" class="htmledit_views">
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 这次项目的讲解分为4各部分，分别是<span style="color:#fe2c24;">简介(1/4)</span>、<span style="color:#4da8ee;">基础知识(2/4)</span>、<span style="color:#ff9900;">程序开发(3/4)</span>和<span style="color:#1c7331;">联合调试(4/4)</span>，这一次内容属于<span style="color:#4da8ee;">基础知识(2/4)</span>，可以对应文章标题（↑）快速定位目前处于哪一讲解环节。</p> 
+<p>&nbsp;</p> 
+<p></p> 
+<p></p> 
+<p><span style="color:#a5a5a5;"><em>首先声明：文中提到的任何（包括但不限于）产品、技术、商品和商家等一系列具有潜在的（包括但不限于）经济支持、赞助等各种经济利益给与的可能的情况都是不存在的。说人话就是这篇博文中提到的一些东西仅是我个人多年来的经验总结的一些看法，与他人无关，且对事不对人，如有雷同，纯属巧合。</em></span></p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 这次讲的东西会非常多，所以目录的存在是必须的，你可以根据自己对软硬件开发的了解程度选择性的看看。</p> 
+<p id="main-toc"><strong>目录</strong></p> 
+<p id="" style="margin: 0px 0px 2px; padding-left: 24px;"><a href="#t0" rel="nofollow" target="_self">一、介绍电机相关套件</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t1" rel="nofollow" target="_self">1. 电机是什么</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t2" rel="nofollow" target="_self">2. 电机的类型</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t3" rel="nofollow" target="_self">3. 运动传动方式</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t4" rel="nofollow" target="_self">4. 驱动器讲解</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t5" rel="nofollow" target="_self">5. 位置的获取</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t6" rel="nofollow" target="_self">6. 速度、加速度和步进长度等参数的计算方法</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t7" rel="nofollow" target="_self">7. 精度的测量</a></p> 
+<p id="" style="margin: 0px 0px 2px; padding-left: 24px;"><a href="#t8" rel="nofollow" target="_self">二、介绍STM32</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t9" rel="nofollow" target="_self">1. 常用开发芯片的种类</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t10" rel="nofollow" target="_self">2. STM32系列ARM Cortex-M架构的芯片</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t11" rel="nofollow" target="_self">3. 芯片选型的方法</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t12" rel="nofollow" target="_self">4. 现有的国产替代（基于2021.10.24）</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t13" rel="nofollow" target="_self">5. STM32F4xx的开发方法</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t14" rel="nofollow" target="_self">6. STM32CubeMX软件的使用</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t15" rel="nofollow" target="_self">7. 代码移植</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t16" rel="nofollow" target="_self">8. STM32F407片上资源介绍</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t17" rel="nofollow" target="_self">9. keil开发环境的搭建</a></p> 
+<p id="" style="margin: 0px 0px 2px; padding-left: 24px;"><a href="#t18" rel="nofollow" target="_self">三、介绍Qt</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t19" rel="nofollow" target="_self">1. 什么是Qt</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t20" rel="nofollow" target="_self">2. 如何使用Qt</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t21" rel="nofollow" target="_self">3. Qt开发环境的搭建</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t22" rel="nofollow" target="_self">4. 界面的开发（*.ui）</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t23" rel="nofollow" target="_self">5. 常用的各类组件</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t24" rel="nofollow" target="_self">6. 代码的开发(*.cpp with *.ui)</a></p> 
+<p id="" style="margin: 0px 0px 2px; padding-left: 24px;"><a href="#t25" rel="nofollow" target="_self">四、介绍USB协议</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t26" rel="nofollow" target="_self">1. 什么是USB</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t27" rel="nofollow" target="_self">2. USB的发展历史</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t28" rel="nofollow" target="_self">3. 全速和高速USB的通信协议</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t29" rel="nofollow" target="_self">4. USB固定的通信方案</a></p> 
+<p id="" style="margin: 0px 0px 2px; padding-left: 24px;"><a href="#t30" rel="nofollow" target="_self">五、介绍电路设计</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t31" rel="nofollow" target="_self">1. STM32F407ZGT6核心板的电路设计</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t32" rel="nofollow" target="_self">2. 常用的设计软件</a></p> 
+<p id="" style="margin: 0px 0px 2px 48px; padding-left: 24px;"><a href="#t33" rel="nofollow" target="_self">3. 设计一个简单的驱动电压转换电路</a></p> 
+<p id="" style="margin: 0px 0px 2px; padding-left: 24px;"><a href="#t34" rel="nofollow" target="_self">相关连接：</a></p> 
+<hr id="hr-toc"> 
+<p></p> 
+<h2 id="%E4%B8%80%E3%80%81%E4%BB%8B%E7%BB%8D%E7%94%B5%E6%9C%BA%E7%9B%B8%E5%85%B3%E5%A5%97%E4%BB%B6"><a name="t0"></a><span style="color:#956fe7;">一、介绍电机相关套件</span></h2> 
+<h3 id="1.%20%E7%94%B5%E6%9C%BA%E6%98%AF%E4%BB%80%E4%B9%88"><a name="t1"></a>1. 电机是什么</h3> 
+<p><span style="color:#fe2c24;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 电机是指依据电磁感应定律实现电能转换或传递的一种电磁装置。</span></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 将电能转换成动能的是<strong>电动机</strong>，将动能转换为电能的是<strong>发电机</strong>，本文提到的电机都是电动机，也就是将电能转换为动能的设备。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 电机根据不同的需求发展到今天产生了很多门类的细分，不同的工作需求可以有合适的电机种类胜任相关的工作，下面我们来看一下各种类型的电机。</p> 
+<p></p> 
+<h3 id="2.%20%E7%94%B5%E6%9C%BA%E7%9A%84%E7%B1%BB%E5%9E%8B"><a name="t2"></a>2. 电机的类型</h3> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 这里推荐一下<a href="https://zhuanlan.zhihu.com/p/189230621" rel="nofollow" title="不看后悔！最全的电机分类，看这一篇就够了！ - 知乎">不看后悔！最全的电机分类，看这一篇就够了！ - 知乎</a></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 我也将上文中的分类粗略的做了几张图供大家参考：</p> 
+<p style="text-align:center;"><img alt="" height="311" src="https://img-blog.csdnimg.cn/381b234bbc1349aab54e81fac347cea9.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="621"></p> 
+<p style="text-align:center;">&nbsp; 图1.2.1（工作电源种类）</p> 
+<p style="text-align:center;"></p> 
+<p style="text-align:center;">&nbsp;<img alt="" height="294" src="https://img-blog.csdnimg.cn/3554524da72c4049a9b6024961307177.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="611"></p> 
+<p style="text-align:center;">&nbsp;&nbsp; 图1.2.2（结构和工作原理）</p> 
+<p></p> 
+<p style="text-align:center;"><img alt="" height="294" src="https://img-blog.csdnimg.cn/937b8e9212a949a7be35d23ab01711f0.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="600"></p> 
+<p style="text-align:center;">&nbsp;图1.2.3（电机用途）</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; （还有一种电机叫<span style="color:#1c7331;">直线电机</span>（图1.2.4），其实在开发这个项目的时候我也考虑过，它有着优秀的精度、准确的定位、没有回程差和速度性能优异等一系列优点，奈何它价格相对昂贵）</p> 
+<p style="text-align:center;"><img alt="" height="230" src="https://img-blog.csdnimg.cn/2ba4d28957af484dac4ee2c2397f3f34.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="316"></p> 
+<p style="text-align:center;">&nbsp;图1.2.4 直线电机&nbsp;</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 每种分类下的各种电机都有它自身所擅长的领域，篇幅有限这里我不展开说，大家只需要了解在电机界有这么个东西就行。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 我们再仔细说说<a href="https://so.csdn.net/so/search?q=%E6%AD%A5%E8%BF%9B%E7%94%B5%E6%9C%BA&amp;spm=1001.2101.3001.7020" target="_blank" class="hl hl-1" data-report-view="{&quot;spm&quot;:&quot;1001.2101.3001.7020&quot;,&quot;dest&quot;:&quot;https://so.csdn.net/so/search?q=%E6%AD%A5%E8%BF%9B%E7%94%B5%E6%9C%BA&amp;spm=1001.2101.3001.7020&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;步进电机\&quot;}&quot;}" data-report-click="{&quot;spm&quot;:&quot;1001.2101.3001.7020&quot;,&quot;dest&quot;:&quot;https://so.csdn.net/so/search?q=%E6%AD%A5%E8%BF%9B%E7%94%B5%E6%9C%BA&amp;spm=1001.2101.3001.7020&quot;,&quot;extra&quot;:&quot;{\&quot;searchword\&quot;:\&quot;步进电机\&quot;}&quot;}" data-tit="步进电机" data-pretit="步进电机">步进电机</a>：</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#be191c;">首先</span>是<span style="color:#ff9900;">开环和闭环</span>步进电机的区别，<span style="color:#494949;">做过电压转换电路、设计过运算放大器和调过PID的同学肯定都知道什么是反馈，闭环控制就是反馈控制。</span><span style="color:#4da8ee;">书上的语言</span>：开环控制是指无反馈信息的系统控制方式，闭环是指作为被控的输出以一定方式返回到作为控制的输入端，并对输入端施加控制影响的一种控制关系。<span style="color:#98c091;">说人话</span>：开环可以类比为烧水时想稳定在50℃，我们唯一能控制的只有火力大小，所以我们没办法精确控制只能凭经验；闭环控制就是在水中放了个温度计（反馈源）可以实时显示现在的温度（反馈量），我们可以根据提示的温度去控制火候（反馈控制输入端）。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 所以开环步进电机在运行时假设我们期望输出500步，但我们没有方法去实时监测它实际运行了多少，也许是495也许是510，这种实际步数和期望步数不一样的情况被称之为<strong>丢步</strong>；闭环步进电机一般会在转子后（电机的屁股）封装一个光栅尺或磁栅尺，它的作用就像是个检票员，有多少个脉冲成功上车它就吼多少声（只是个类比，实际情况更复杂），其精度可以做到非常高，一般来说会以多少千线为单位，线数越多精度越高，他们的内部的检测方式不做深究。</p> 
+<p style="text-align:center;"><img alt="" height="439" src="https://img-blog.csdnimg.cn/411a6b298da34d1a8a08cdb5ad746afc.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="476"></p> 
+<p style="text-align:center;">&nbsp;图1.2.5 步进电机内部结构</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="color:#be191c;"> 其次</span><span style="color:#494949;">是</span>步进电机的<span style="color:#ff9900;">工作原理</span>：通常步进电机由两部分组成：<span style="color:#956fe7;">转子</span>和<span style="color:#ad720d;">定子</span>（如图1.2.5），<span style="color:#956fe7;">转子</span>是步进电机中能转动的部分（在中间，与转轴连在一起），一般为永磁体（一直保持磁性的磁铁）；<span style="color:#ad720d;">定子</span>是步进电机中固定不动的部分（在外侧的一圈），一般会对<span style="color:#ad720d;">定子</span>绕满了电线，称之为<span style="color:#edf6e8;"><span style="background-color:#7b7f82;">绕组</span></span>。根据相应物理定律，当在绕组中通过变化的电流时会产生变化的（矢量）磁场（具体物理过程可以参考<a class="link-info" href="https://zhuanlan.zhihu.com/p/147659820" rel="nofollow" title="稚晖君写的知乎">稚晖君写的知乎</a>）。（参考图1.2.6）因此当<span style="color:#ad720d;">定子</span>的矢量磁场旋转一个角度（对应电线中通电顺序改变），<span style="color:#956fe7;">转子</span>也随着该磁场转一个角度，因此每输入一个脉冲，电机就会转动一步，输出的角位移（转动度数、<span style="color:#1c7331;">步距角</span>）与输入的脉冲数成正比、转速与脉冲频率成正比，改变绕组通电的顺序，电机就会反转。因此可以通过控制脉冲数量、频率及电动机各相绕组的通电顺序来控制步进电机的转动。</p> 
+<p style="text-align:center;"><img alt="" height="269" src="https://img-blog.csdnimg.cn/56d749e9a1224e8aa6a46b06f5932bf8.gif" width="370">&nbsp;&nbsp;&nbsp; &nbsp; <img alt="" height="147" src="https://img-blog.csdnimg.cn/082ae177389e4158b4db6271fda5f3b8.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="519"></p> 
+<p style="text-align:center;">&nbsp;&nbsp;图1.2.6&nbsp; 电机通电的运动&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;&nbsp; 图1.2.7&nbsp; 电机通电定子的位置</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#1c7331;">步距角</span>来源于步进电机的内部结构，如果你小时候玩过四驱车，当你用手去拧马达时你肯定能感觉到转动的时候会一顿一顿的并不连贯，这是因为直流有刷电机内部的<span style="color:#956fe7;">转子</span><span style="color:#494949;">和</span><span style="color:#b95514;">定子绕组</span>数量很少，因此能让<span style="color:#956fe7;">转子的磁铁</span>稳定的位置很少可以，只有如图1.2.7所示的6个（别杠！实际不止这么点，只是打个比方！），因此这类电机的低频特性（低转速、脉冲速度很慢）就很差，电机运动起来抖动会相当明显（稳定位置之间的距离太远）。步进电机为了解决这个问题，在设计结构时将<span style="color:#ad720d;">定子内侧</span>和<span style="color:#956fe7;">转子外侧</span>都加上了很多的小齿结构如图1.2.8和图1.2.9和图1.2.10，通过这些小齿的细分，步进电机可以在多达成百上千个位置稳定停止，就像把汽车轮胎从不太像圆形的六边形替换为了近似圆形的256边形，通过大量的细分边角让人在车里感受不到棱角带来的起伏震动。因此只要小齿结构越小越细密，步进电机能划分的稳定位置就越多，运动的抖动就会越不明显，当然也不是越多越好，划分太小了磁场的控制能力就会大大减弱，电机的驱动能力就会减弱。</p> 
+<p>&nbsp;<img alt="" height="268" src="https://img-blog.csdnimg.cn/7ff8c7dbcbf34fee8d38cb27b980c84d.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_18,color_FFFFFF,t_70,g_se,x_16" width="278">&nbsp;&nbsp;&nbsp;&nbsp; <img alt="" height="270" src="https://img-blog.csdnimg.cn/c261400b0e4b44a7a6228a6ac5b072a5.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="309">&nbsp;&nbsp; <img alt="" height="270" src="https://img-blog.csdnimg.cn/85a9a355d2744d9c90680442850acb41.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="271"></p> 
+<p></p> 
+<p style="text-align:center;">图1.2.8 步进电机截面图&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; 图1.2.9 步进电机拆解图（定子）&nbsp;&nbsp;&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 图1.2.10 步进电机拆解图（定子和转子）</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#be191c;">最后</span>是步进电机的<span style="color:#ff9900;">特征参数</span><span style="color:#494949;">：在市面上我见得比较多的步进电机的</span><span style="color:#1c7331;">步距角</span><span style="color:#494949;">一般为1.8°和0.9°，转动一圈分别需要360°/1.8°=200、360°/0.9°=400个脉冲信号，当然也有很多其他角度比如：</span>0.72°，0.36°，1.5°，0.75°，等等，决定这些度数的关键就是上面刚说的小齿结构的数量以及<span style="color:#edf6e8;"><span style="background-color:#7b7f82;">绕组</span></span>结构（在本节4驱动器部分细讲）。步进电机大小一般为固定的几种：42、57、60和86等更大的（也有更小的），这些数字指的是外形长宽的尺寸，高度根据各家的设计会不一样，单位是毫米。步进电机尺寸增大带来的主要性能提升是<strong>转动转矩</strong>（单位牛米），就如之前说的（<em>划分太小了磁场的控制能力就会大大减弱，电机的驱动能力就会减弱</em>），相同小齿结构数量的电机，外形体积越大、小齿体积越大，绕组越大，缠绕的导线越多，通过的电流越大，磁场也就越强，控制能力就会提高。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 对应于这次项目的需求，我选择<span style="color:#b95514;">控制用电机</span>中的<span style="color:#4da8ee;">步进电机</span><span style="color:#494949;">（图</span>1.2.<span style="color:#494949;">11），没有选择</span><span style="color:#956fe7;">伺服电机</span><span style="color:#494949;">（图</span>1.2.<span style="color:#494949;">12）的原因，主要是在价格和精度之间平衡了一下，最终选择了<strong>闭环</strong>步进电机，精度控制也说得过去只不过没中高端伺服电机这么优秀。看完了这么多电机，下面我们来讲讲电机在工业中一般是怎么使用的。</span></p> 
+<p style="text-align:center;">&nbsp; <img alt="" height="160" src="https://img-blog.csdnimg.cn/e8fea856e3ef4c6a9c2d2e229b1774ac.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_15,color_FFFFFF,t_70,g_se,x_16" width="171">&nbsp; <img alt="" height="158" src="https://img-blog.csdnimg.cn/313d4f6759b646d2a4a3d2a6a03955be.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="245"></p> 
+<p style="text-align:center;">图1.2.11 步进电机&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 图1.2.12伺服电机</p> 
+<p></p> 
+<h3 id="3.%20%E8%BF%90%E5%8A%A8%E4%BC%A0%E5%8A%A8%E6%96%B9%E5%BC%8F"><a name="t3"></a>3. 运动传动方式</h3> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 一般来说工业控制主要是以两种运动为主：<span style="color:#be191c;">平移</span>和<span style="color:#6eaad7;">旋转</span>。多轴工业机械臂（图1.3.1）主要利用电机旋转来进行工作，3D打印机的位移头/平台（图1.3.2）主要利用电机的旋转带动一些器件来做平行移动。</p> 
+<p style="text-align:center;"><img alt="" height="244" src="https://img-blog.csdnimg.cn/5f3fc82fcc1e44e1b71d32bbb77527d6.gif" width="235">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp;&nbsp;&nbsp; <img alt="" height="244" src="https://img-blog.csdnimg.cn/44baf363be9243e9bc8f41a92ee68f3d.gif" width="247"></p> 
+<p style="text-align:center;">图1.3.1 多轴机械臂 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp; 图1.3.2 3D打印位移头</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 在器件直接连接电机的情况下，电机<span style="color:#6eaad7;">旋转式运动</span>的运行速度和精度完全取决于电机的驱动能力，如果还有齿轮等一系列用于提升或降低某方面性能的转接件时（比如降低速度提高扭力，类似汽车变速箱），运行速度和精度还需要考虑外设的设计和加工水平。<span style="color:#494949;">能</span><span style="color:#fe2c24;"><strong>直接</strong></span><span style="color:#be191c;">平移式运动</span>的电机除<a class="link-info" href="https://zhuanlan.zhihu.com/p/358614364" rel="nofollow" title="直线电机">直线电机</a>、<a class="link-info" href="https://zhuanlan.zhihu.com/p/353876094" rel="nofollow" title="音圈电机">音圈电机</a>等驱动原理都不太一样的之外，大多还是采用丝杆（丝杠）传动的方式来<span style="color:#fe2c24;"><strong>间接</strong></span>实现，运行速度和精度也需要考虑丝杠和滑动平台之间的连接方式。一般来说，采用丝杆结构的运动都会存在一个难以用低成本方式消除的绝对影响：<span style="color:#ff9900;"><strong>回程差</strong></span>（准确说法：传动间隙）（<s>有人说用弹簧啊！直接拉紧（或用预压）不就好了吗！很多超高精密位移台不就是用压电陶瓷电机和带弹簧的交叉滚柱导轨这么设计的吗！</s>）（<s>这不废话吗，有可行性但是这会牺牲电机运动的各项性能，并且弹簧存在不可控性，谁知道什么时候弹力会失效</s>）（<s>我就见过一个用了才3年的带弹簧的交叉滚柱导轨弹簧失效了并且润滑油凝固了，滑台无法自己回到弹簧最紧状态的精密位移台</s>）。</p> 
+<p><span style="color:#ff9900;"><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 回程差</strong></span>产生的原因主要在于丝杆和转动器件之间<span style="color:#fe2c24;">不可能</span>实现真正意义上完全贴合（受限于加工精度），单向运动不存在回程差，但是在往返运动时回程差就会出现（比如丝杆导程1mm，滑动平台螺纹能卡住0.9mm，那么在前进时剩下的0.1mm空隙会始终在前进方向螺纹的前端，往回走时这0.1mm就会先走，但此时滑台并没有移动，这时<strong><span style="color:#ff9900;">回程差</span></strong>就是0.1mm，这比较理想化，实际情况会因为螺纹的存在而有更复杂的计算）。因此丝杠和滑动平台之间的连接方式就是决定回程差大小的决定性因素之一，现在主流的设计基本都是滚珠丝杠，结构透视图如图1.3.3所示。</p> 
+<p style="text-align:center;"><img alt="" height="153" src="https://img-blog.csdnimg.cn/b10757f7927e4720b78c83b60b1dbc55.gif" width="204">&nbsp; <img alt="" height="164" src="https://img-blog.csdnimg.cn/f85730ce70a84968bb058fe781e1e1f0.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="165">&nbsp; <img alt="" height="92" src="https://img-blog.csdnimg.cn/b0b7ee29d3ad4f8cba5edab77dc3e28f.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="179"></p> 
+<p style="text-align:center;">&nbsp;&nbsp;&nbsp;&nbsp; 图1.3.3 滚珠丝杠 &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 图1.3.4 滚柱轴承 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; 图1.3.5 悠悠球内部</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 一长串的小圆珠在滑台中循环往复的流动，在降低传动摩擦的同时保持滑台运行的平稳性，这个设计类似滚珠轴承（图1.3.4，<span style="color:#7b7f82;"><em>小时候我们玩的悠悠球内部[图1.3.5]就有一个这样的东西，越好的悠悠球内部滚珠轴承性能越好，摩擦力小带来更长的转动时间</em></span>），都是用滚动摩擦力替代了滑动摩擦力，能有效降低阻力减少磨损减少发热（提高性能延长器件寿命）。小圆珠的最小体积和滑台内部小圆珠的流动方式共同决定了丝杆螺纹间距（螺距或导程，对于单线螺纹而言）的大小，目前市面上能供大众购买到的相对比较可靠的精密滚珠丝杆是上银（HIWIN）的那一堆系列<em><span style="background-color:#d7d8d9;">（我个人的偏好，非喜勿喷）</span></em>（有经验的大佬也可以在评论区留言推荐一下）。</p> 
+<p></p> 
+<p style="text-align:center;"><img alt="" height="235" src="https://img-blog.csdnimg.cn/e2ed6583e915419bbcdce83207d3df60.jpg?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_14,color_FFFFFF,t_70,g_se,x_16" width="235"></p> 
+<p style="text-align:center;">&nbsp;图1.3.6 圆不拉几的<s>滚珠循环收纳器</s></p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 一般来说只有一个类似图1.3.6这样圆不拉几的<s>滚珠循环收纳器</s>（<em><s>自创词汇切勿当真</s></em>），是没办法直接使用的，为了能让使用者在平面上放置其他部件，一般会有以下几种设计方案：</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1）双<span style="color:#4da8ee;">光杆</span>（在两边） + <span style="color:#1c7331;">固定</span>步进电机 + 平台 （图1.3.7）</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2）双<span style="color:#4da8ee;">光杆</span> + <span style="color:#ff9900;">贯穿轴式</span>步进电机平台&nbsp; （没图）</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ?）双<span style="color:#ff9900;">贯穿轴式</span>步进电机 + 连杆平台 （<a class="link-info" href="https://www.bilibili.com/video/BV19v411M7Rs" rel="nofollow" title="参考B站-何同学-20211017的视频">参考B站-何同学-20211017的视频</a><s>，emmm</s>）</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4）<span style="color:#1c7331;">固定</span>步进电机 + <span style="color:#b95514;">滑台</span>（红绿色的那个） （图1.3.8）&nbsp;</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5）<span style="color:#1c7331;">固定</span>步进电机 + 双<span style="color:#b95514;">滑台</span>（红绿色的那个） （图1.3.9）</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 等等</p> 
+<p style="text-align:center;"><img alt="" height="138" src="https://img-blog.csdnimg.cn/0274c32a025e40829d982f6eb4a6d275.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="227">&nbsp;&nbsp; <img alt="" height="166" src="https://img-blog.csdnimg.cn/8f8adf8642ca41bbba0e9c90375cf2de.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="211">&nbsp;&nbsp; <img alt="" height="184" src="https://img-blog.csdnimg.cn/107d663ee0604f628aaa4925d7087ed5.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="196"></p> 
+<p style="text-align:center;">图1.3.7 双光杆+固定步进电机+平台&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 图1.3.8 固定步进电机+滑台&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp; 图1.3.9 固定步进电机+双滑台</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 大家应该都能看得出就是排列组合拼凑一下就好，但是不同组合之间还是会有一些差别，尤其是<span style="color:#ff9900;">贯穿轴式</span>步进电机（图1.3.10）是一个自身就包含了电机和滚珠丝杆的整体结构（固定丝杆位置让电机工作时电机自身会前后移动）；<span style="color:#1c7331;">固定</span><span style="color:#494949;">步进电机是电机和丝杆固定，让滑台随转轴转动前后移动。</span></p> 
+<p style="text-align:center;"><img alt="" height="295" src="https://img-blog.csdnimg.cn/f3b9f3bd888d4be3887d08af5caf80ca.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="340"></p> 
+<p style="text-align:center;">图1.3.10 贯穿轴式步进电机</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 对于用步进电机设计的小型电控龙门吊而言，还会一次使用两个相同的驱动结构同时运行以提高长距离运行的载重能力和重心的稳定性，如图1.3.11。</p> 
+<p style="text-align:center;"><img alt="" height="255" src="https://img-blog.csdnimg.cn/898c176b864441cebf1e3690190008b0.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="497"></p> 
+<p style="text-align:center;">&nbsp;图1.3.11 小型龙门吊</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="color:#ad720d;">滑台</span>依旧推荐上银（HIWIN）家的<em><span style="background-color:#d7d8d9;">（我个人的偏好，非喜勿喷）</span></em>，因为在很多高价格（数万到数十万）的电动位移台整机设计厂商中我看到了此模块的应用，说明这家滑块的产品可靠性不低。至此，传动部分的知识大概介绍完毕，我使用的是上述4号方案——<span style="color:#1c7331;">固定</span>步进电机 + <span style="color:#b95514;">滑台</span>，其也有对应的成品，型号是上银（HIWIN）的KK40模组（如图1.3.12，搭成了X-Y轴二维位移平台，<s>上银家祖传的<strong><span style="color:#ed7976;">红配绿</span><span style="color:#98c091;">丑到哭</span></strong>滑块看的我是又爱又恨，虽然也给我满桌要不银色、要不黑色的工作环境带来了一丝的生机(<em>误</em>) </s>）。</p> 
+<p style="text-align:center;"><img alt="" height="367" src="https://img-blog.csdnimg.cn/820d3fa40f714ef8830b7c1ee9552043.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_13,color_FFFFFF,t_70,g_se,x_16" width="263"></p> 
+<p style="text-align:center;">&nbsp;图1.3.12 X-Y轴二维位移平台</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 讲到这里，滑台也有了，电机也有了，那是不是就可以开始使用了呢！nonono~ 电机一般是设计一个D字口的转轴在外（主动轴），滑台也是一个D字口的转轴在外（从动轴），在电机转轴和滑台转轴之间还需要一个紧紧咬合双方一起转动的连接部件——<strong>轴联器</strong>，如图1.3.13所示。轴联器型号多到为此还设立了国标去统一设计，这里我们只是简单地介绍一下步进电机和伺服电机用得较多的单/双金属膜片轴联器。首先我们先理解工程力学里面的两个概念：</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1. 刚性连接和挠性连接（柔性连接）：刚性连接简单来说就是两个连接件之间硬碰硬，没有弹性（可逆）或塑性（不可逆）形变；挠性连接就是两个连接件之间相对有缓冲，通过弹性或塑性形变吸收部分形变能量。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2. 偏心：指的是转动从动件和转动主动件绕轴运动的中心线不在一条直线上，此时双方互为偏心运动，也可以 ≈ 对径向偏差。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 肯定很多人会说，【不就是两根轴嘛，直接在两个轴上套个桶紧固一下不就好了吗，干嘛这么麻烦】。这话说的没问题但是也有点问题，没问题在于确实需要一个桶来互相紧固，有问题在这个连接模型考虑的太理想化。很多时候由于主动件和从动件在存在加工误差、安装误差、承载变形、运行损耗和热胀冷缩等一系列不可控因素，导致两者的转动运动轴线不在同一条线上，如果单纯的采用理想化套筒来刚性连接双方，可能会剧烈磨损器件导致提前报废甚至引发安全事故。因此单/双膜片在轴联器中<span style="color:#be191c;">存在的意义</span>：提供两轴间<span style="color:#ff9900;">轴向</span>挠性变化，并在<span style="color:#4da8ee;">垂轴</span>（转轴）方向保持高强度的刚性连接，实现：无噪声（相对于齿轮轴联器）、高扭转刚度、低惯性及零背隙的需求，它在高速转动、精密控制场合有着不可替代的地位。单膜片的偏心处理能力没有双膜片好，但是成本低一些，不差钱直接上双膜片就好。轴联器有两个参数需要知道：一是它两边连接的轴径大小是可选的，比如一边4mm一边6mm；二是每个轴联器都有最大的传动功率，最高转速和最大扭力互为反比例关系。</p> 
+<p style="text-align:center;"><img alt="" height="236" src="https://img-blog.csdnimg.cn/1f3ef575f2d94c0aa9138597c268a65e.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="499"></p> 
+<p style="text-align:center;">&nbsp;图1.3.13 各种型号的轴联器</p> 
+<p><strong>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </strong></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 讲完了电机和电机的传动方式，下一部分我们来探讨一下如何驱动电机。</p> 
+<p></p> 
+<h3 id="4.%20%E9%A9%B1%E5%8A%A8%E5%99%A8%E8%AE%B2%E8%A7%A3"><a name="t4"></a>4. 驱动器讲解</h3> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em>由于现在我还不是<s>野生钢铁侠（bushi）</s>，所以暂时没这个时间去自己设计驱动电路（后面我会补上这个环节），如果有兴趣自己做驱动器的童鞋可以参考上述<a class="link-info" href="https://zhuanlan.zhihu.com/p/147659820" rel="nofollow" title="稚晖君的那篇讲解">稚晖君的那篇讲解</a>去学习如何使用FOC算法与SVPWM技术精准驱动电机。</em></p> 
+<p>&nbsp; &nbsp; &nbsp;&nbsp; 驱动器，顾名思义，是一个用来驱动电机的器件，讲驱动器之前我们要先知道为什么会存在驱动器这个东西。在之前提到电机的<span style="color:#edf6e8;"><span style="background-color:#7b7f82;">绕组</span></span><span style="color:#494949;">和小齿结构决定了步进电机的</span><span style="color:#1c7331;">步距角</span><span style="color:#494949;">时我并没有细说为什么会有这些（<s>千奇百怪</s>）的角度，这是因为步进电机的</span><span style="color:#edf6e8;"><span style="background-color:#7b7f82;">绕组</span></span><span style="color:#494949;">也存在好几种不同的方式，一般被称之为 M 相 N 线：</span></p> 
+<p><span style="color:#494949;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; M 相是电机内部用于同一时间激发不同磁场的线圈组（相）的数目，</span>这 M 相的绕组在定子上均匀（对称）分布，所以定子的磁极数必定是 M 的整数倍，因此转子转一圈的步数应该是 M 的整数倍<span style="color:#494949;">，目前的电机内部设计一般有2、3、4和5相这几种类型，对应的的步距角就是：360°/2相/100步=1.8°（200步=0.9°）、360°/3相/80步=1.5°（160步=0.75°）、360°/4相/100步=0.9°和360°/5相/100步=0.72°（200步=0.36°）等等，相数越多，电机可稳定位置越多，低频特性越好，但是控制起来也越复杂（在没有更先进的技术[<em>详见驱动器</em></span><span style="color:#efedf6;"><em><span style="background-color:#be191c;">步数细分</span></em></span><span style="color:#494949;"><em>部分</em>]前，为了获取更小的步进步数，会使用相数较多的电机）；</span></p> 
+<p><span style="color:#494949;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; N 线指的是从电机中引出来的电线数量，电机中每一相都是一组线圈，因此必定会有一进一出两根线（导电回路），所以理论上 N 线为 M 的整倍数，比如下图的2相电机的4、6和8线模式，但是有的电机会把负极（地线）或正极（电源线）这种公共端接在一起（取决于驱动用的NPN或PNP类型的三极管、P-Channel或N-Channel的场效应管或IGBT开关，对这些电学器件有兴趣可以自己看看），所以2相、4相电机也会有5线模式，反过来6线有可能是2、3、4和5相的模式，因此当电机拿到手时需要先明确它是几相的电机才方便下一步接线。总结一下：</span>二相电机引出线可以是4根、5根、6根或8根，四相电机：引出线可以是5根、6根或8根，三相电机：引出线可以是3根、5根或6根，五相电机：引出线可以是5根、6根或10根。这些只是常见的接线组合方式，可能也会有其他的组合，内部的绕组具体如何对应外在的引出线需要查看电机制造商提供的技术文档。</p> 
+<p style="text-align:center;">&nbsp;<img alt="" height="239" src="https://img-blog.csdnimg.cn/692320e418864675aed5efe9f674b0ef.png" width="228">&nbsp;&nbsp; <img alt="" height="235" src="https://img-blog.csdnimg.cn/e5d000d3309e474f941bdd559de0f29a.png" width="231">&nbsp;&nbsp; <img alt="" height="240" src="https://img-blog.csdnimg.cn/8cff45abc903466d8a6581b1bb7ceec0.png" width="239"></p> 
+<p style="text-align:center;">&nbsp;图1.4.1 步进电机2相4线&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; 图1.4.2 步进电机2相6线&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; 图1.4.3 步进电机2相8线</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 在这其中还有一个特性也是需要知道的：电机绕组的单、双极性。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 如上图1.4.1所示的2相4线，这就是一个双极性的绕组，定子磁极上的线圈为单线绕组，通过变换电流方向可以反转磁极（当电流从A流向C时产生（假定）朝上的磁通，当电流从C流向A时产生朝上的磁通），一般控制双极性的绕组需要8个晶体管，如下图1.4.4所示，通过正极的4个晶体管和负极的4个晶体管控制线圈的电流方向；</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 如上图1.4.2所示的2相6线，这就是一个单极性的绕组，定子磁极上的线圈为双线绕组，其中【白 WHT O】和【黑 BLK M】两个线头为公共端，统一接正极（电源端），绕组其中一组线从【O端口】往上绕到【A端口】，通电时产生（假定）朝上的磁通，绕组另一组线从【O端口】往下绕到【C端口】，通电时产生朝下的磁通，切不可同时将【A端口】和【C端口】接通，不然产生的磁通会相互抵消不能产生任何效果，一般控制单极性的绕组只需要双极性一半的晶体管，也就是4个，如下图1.4.5所示。单极性和双极性的绕组绕线方式可以参考图1.4.6。</p> 
+<p style="text-align:center;"><img alt="" height="356" src="https://img-blog.csdnimg.cn/da312071b8644609ba3377d623068c2a.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_19,color_FFFFFF,t_70,g_se,x_16" width="382">&nbsp;&nbsp;&nbsp; <img alt="" height="356" src="https://img-blog.csdnimg.cn/87c6bb2163a8480ab73f17f0fa463d21.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="363"></p> 
+<p style="text-align:center;">&nbsp;图1.4.4 双极性步进电机2相4线&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp; &nbsp; 图1.4.5 步进电机2相6线&nbsp;</p> 
+<p></p> 
+<p style="text-align:center;">&nbsp;<img alt="" height="275" src="https://img-blog.csdnimg.cn/e18efaf5b42e4de99df8e80913acf964.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="644"></p> 
+<p style="text-align:center;">&nbsp;图1.4.6 单极性、双极性绕组导线缠绕方式</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 如上图1.4.6所示，假设导线的线径（粗细）相同、绕组长度相同，那么单极性绕组的AC线圈匝数与ĀC各为N匝，电阻各为R，双极性绕组的AĀ线圈匝数为2N，电阻为2R，当用相同<span style="color:#1a439c;">恒压V</span>驱动电机工作在<span style="color:#ff9900;">低速状态</span><span style="color:#494949;">时，单极性和双极性的对比如表1所示，其中</span><span style="color:#1c7331;">电流</span>与线圈匝数的乘积称为安匝数，该参数与<strong>转动力矩</strong>（转矩）成正比（相同<span style="color:#1c7331;">电流</span>下线圈匝数越多磁力越强），如果两者转速相同，输出功率与安匝数有比例关系（W/F）。通过计算可知在相同输出功率W时，单极性的<span style="color:#1c7331;">电流</span>比双极性大2倍，因此相同<strong>转动力矩</strong>（与安匝数成比例）下双极性的能量效率要比单极性高一倍，具体参考图1.4.7。因此在<span style="color:#ff9900;">低速应用</span>时，对<strong>转动力矩</strong>或能量效率有较高要求时，应使用双极性电机驱动。但是在<span style="color:#511b78;">高速情况</span>下，由于：1. 双极性电机匝数多，导通电流时电感变大，同时反电势增大，高速信号正反切换时反电势阻碍明显，导致正电势被抵消而减小，因此<span style="color:#1c7331;">电流</span>减小，安匝数（<strong>转动力矩</strong>）降低。2. 多一倍的场效应管带来更严格的最大频率限制（取决于Cgs，详见电学相关的知识）。因此在<span style="color:#511b78;">高速应用</span>时一般会用单极性电机驱动。</p> 
+<p style="text-align:center;">表1 单极性双极性比较</p> 
+<div class="table-box"><table align="center" border="1" cellpadding="1" cellspacing="1" style="width:500px;"><tbody><tr><td></td><td style="width:171px;">单极性</td><td style="width:205px;">双极性</td></tr><tr><td>安匝数</td><td style="width:171px;">F1=V*N/R</td><td style="width:205px;">F2=V*2N/2R=V*N/R</td></tr><tr><td>输出功率</td><td style="width:171px;">W1=(V/R)²*R=V²/R</td><td style="width:205px;">W2=(V/2R)²*2R=V²/2R</td></tr><tr><td>能量效率</td><td style="width:171px;">η=F1/W1=N/V</td><td style="width:205px;">η=F2/W2=2N/V</td></tr></tbody></table></div> 
+<p></p> 
+<p style="text-align:center;"><img alt="" height="218" src="https://img-blog.csdnimg.cn/94d53ef961944d55bb4ceafc6b53a6ec.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_14,color_FFFFFF,t_70,g_se,x_16" width="278"></p> 
+<p style="text-align:center;">&nbsp;图1.4.7 单极性与双极性 频率pps-转矩 对比图</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 说了这么多电机的东西，到底这些和驱动器有什么关系？别急，精彩就在后面。电脑上我们在接入一个设备时都会安装驱动软件，这个驱动软件就是用来恰接设备和系统之间的桥梁，因为系统不可能为世界上所有的设备去开发对应的驱动，一般都是由设备商为自己的设备开发系统驱动软件。对应到电机也是，虽然电机种类就那么多（M相N线），但是让用户自己去制作电机的驱动电路也太不优雅了，因此每个种类的电机都会有对应的驱动器去驱动。大部分的步进电机驱动器都长下图1.4.8这个样。</p> 
+<p style="text-align:center;"><img alt="" height="231" src="https://img-blog.csdnimg.cn/d8a2e8b0913a4ef3bae414059caa05a8.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_11,color_FFFFFF,t_70,g_se,x_16" width="284"></p> 
+<p style="text-align:center;">&nbsp;图1.4.8 步进电机驱动器</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 上位机和驱动器通信主要有2种方式：脉冲和总线。总线方式比较出名有：EtherCAT总线、RS485总线等，这类总线控制方式的驱动器使用起来非常方便，只需要与其通信简单的指令信息即可，驱动器内的主控芯片会自动去处理电机的运动过程，并且脉冲式驱动器可以在同一条总线上串联几十几百个驱动器，仅需要寥寥几根线，在多电机、远距离通信上具有绝对优势；脉冲式驱动器是通过其他设备（比如PLC、单片机和FPGA等）给脉冲信号和方向信号以及使能信号来进行工作，其中脉冲信号的数量和频率控制电机的运动步数和速度，方向信号用于控制电机转动方向，使能信号用于控制是否开启电机的控制，一般每个脉冲式驱动器需要最少3根信号（脉冲、方向、地线）控制线才能正常工作，电机数量一多线就会非常多，并且互相靠近的线之间的脉冲信号还会产生干扰带来不可控性，因此脉冲型驱动器一般用于成本要求严格和驱动电机数量不多的情况。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 驱动器在电学上的意义很重要，它承担了上位机5V控制信号和24~48V电机的电压转换（单/双电压功率驱动）、电流控制（斩波恒流功率驱动）、开关电源（端口电流电压控制与切换）等一系列功率控制相关的内容，其中还有一个很重要的技术：<span style="color:#efedf6;"><span style="background-color:#be191c;">步数细分</span></span><span style="color:#494949;">。这项技术的核心作用是不论电机的相数（硬件）怎么样，通过精确的控制驱动电机的相电流（软件）进一步降低最小的步距角。</span></p> 
+<p><span style="color:#494949;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 如图1.4.9所示为两相电机的磁场控制矢量图（假定），其中Fa、Fb、Fc和Fd为定子绕组通电时能产生的磁力方向，一共4个方向（步数无细分）；简单一次细分是同时对Fa和Fb通电产生如图1.4.10的磁力Fab（但是如果Fa和Fb方向的开关只能控制绕组通断的话，Fab的箭头终点不会在圆上，而是以Fa和Fb为边长的正方形的右上角顶点处），同理可得也可以产生Fbc、Fcd和Fda，这时一共8个方向（步数2细分）；如果Fa与Fb的开关能控制通过绕组的电流大小，那么两个磁力的合力方向就可以随意控制，例如图1.4.11所示的任意方向，那么这时步数理论上可以做到无限多（步数无限细分）。因此驱动器能做的步数细分数量完全取决于其对电流控制的精度，精度越高，可控制的细分量越大，电机运行最小步数越低，低频特性越好。很多驱动器上的细分数量能标到好几万，<s>实测下来也就几千的水平</s>，因为环境温度湿度等因素会改变驱动器内部电流控制芯片的运行状态。</span></p> 
+<p style="text-align:center;"><img alt="" height="282" src="https://img-blog.csdnimg.cn/e21b5b17c69a4ce88400cf33867cc980.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="280">&nbsp;&nbsp; <img alt="" height="283" src="https://img-blog.csdnimg.cn/52ae61abd1fa4fb381ccab2923b9e783.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="285">&nbsp;&nbsp; <img alt="" height="283" src="https://img-blog.csdnimg.cn/95fabadb7ad54ac9b28c7ec1c6381ce9.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="277"></p> 
+<p></p> 
+<p style="text-align:center;">图1.4.9 两相步进电机磁场矢量图&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; &nbsp; 图1.4.10 两相步进电机磁场矢量简单插补图&nbsp;&nbsp;&nbsp;&nbsp; &nbsp; &nbsp; &nbsp;&nbsp; 图1.4.11 两相步进电机磁场矢量复杂插补图</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 这次我买的步进电机是闭环的，其在电机尾部有一圈光栅尺作为反馈输入下图1.4.12中的 2 Feedback 部分中实时对电机的控制电流进行调整。1 Signal 部分为上述的脉冲输入、方向控制和使能信号，图中还有一个ALM信号是用于驱动器反馈警报信号给上位机，3 Motor 部分用于连接步进电机，4 VDC连接外置的24~48V驱动电源。图中的表格就是用于选择上述的电机<span style="color:#efedf6;"><span style="background-color:#be191c;">步数细分</span></span>（注意，表上的步数细分是pulse/rev（脉冲/转），也就是多少脉冲转轴转动一圈 [<em>360°</em>] [<em>步数细分直接让步距角的存在意义降低</em>] ），SWx对应于驱动器侧面的拨码开关，通过设置拨码的on与off来初始化驱动器的控制特性。</p> 
+<p style="text-align:center;"><img alt="" height="553" src="https://img-blog.csdnimg.cn/7d4d4baa91fa492196480b18e8bbd3d9.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="396"></p> 
+<p style="text-align:center;">&nbsp;图1.4.12 步进电机驱动器</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 在使用一个新的设备时，个人建议最好反复精读官方提供的产品手册，手册中有很多重要的信息，例如图1.4.13中所示的控制信号时序图，图中标注了使能信号（ENA）比方向控制信号（DIR）要提前 t1 时间稳定，方向控制信号（DIR）比脉冲信号（PUL）要提前 t2 时间稳定，脉冲信号最短的低电平和高电平需要保持多久才能被识别；以及多少电压才被认为是高电平或低电平等等。别写完了驱动器的驱动程序反过来发现无法正确控制驱动器，那debug就会很繁琐。还有一点需要注意的是驱动器的散热，毕竟大电流控制非常容易产生大量的热量，很多大功率MOS管都会自带散热片，更别说驱动器需要控制好几路的大电流，因此让驱动器保持良好的通风和工作在适宜的温湿度下这两点相当重要。</p> 
+<p style="text-align:center;">&nbsp;<img alt="" height="510" src="https://img-blog.csdnimg.cn/9dad528c074840529f652545fce4f601.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="569"></p> 
+<p style="text-align:center;">&nbsp;图1.4.13 步进电机驱动器文档控制信号时序图</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 到这一节为止，我们已经把步进电机、驱动器以及运动传动方式串了起来，现在我们已经可以通过编程产生脉冲去控制电机转动带动滑台运动，接下来我讲一下如何获取滑台的位置并做一些必要的安全措施。</p> 
+<p></p> 
+<h3 id="5.%20%E4%BD%8D%E7%BD%AE%E7%9A%84%E8%8E%B7%E5%8F%96"><a name="t5"></a>5. 位置的获取</h3> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 这里的位置获取主要指的是滑台在轨道上的位置获取（之前电机的闭环控制部分讲到过电机转动位置的获取），目前主流方式有两种：</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1. 磁栅尺条、光栅尺条。他们的工作原理各不相同，磁栅尺条如图1.5.1所示，是以磁力读头和磁带之间的相互作用进行读数，最简单的类比就是早些年的磁带录音机播放机，基本原理是类似的；光栅尺条如图1.5.2所示，是以光栅读头和光栅带之间的相互作用进行读数，它的工作原理是由一个光栅结构和另一个光栅结构或挡光掩模版组成，具体工作过程各不相同（此处暂不展开细说，后面有时间再补上，光栅尺的细节可以看看<a class="link-info" href="https://zhuanlan.zhihu.com/p/77646990" rel="nofollow" title="这个博主的内容">这个博主的内容</a>）。其中光和磁他们自身还分开放式和封闭式，区别在于条和头是否封装在一起，开放式安装方便但是容易受外部影响，比如积灰积油影响精度，封闭式安全但可扩展性差；以及增量式和绝对式，增量式是只输出变化，掉电后数据归零，绝对式是输出头在条上的绝对位置，掉电后数据依然是头所在的位置。条一般固定在另一物体表面，头安装在滑台/工件上跟随运动，一般这两者的定位精度都在 1 / 5 / 10um 这三个量级上。</p> 
+<p style="text-align:center;"><img alt="" height="226" src="https://img-blog.csdnimg.cn/10b6c55486a747f0a9c92d9c06597b86.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="467">&nbsp;&nbsp; <img alt="" height="227" src="https://img-blog.csdnimg.cn/1eacb44009e24b24a892f3b8c147ccb6.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_12,color_FFFFFF,t_70,g_se,x_16" width="360"></p> 
+<p style="text-align:center;">&nbsp;图1.5.1 磁栅尺&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 图1.5.2 光栅尺</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2. 光电开关。如图1.5.3所示，光电开关的简单版本就是一个LED光源加上一个光敏电阻即可，在光敏电阻和LED光源之间放置黑色挡板时光敏电阻无感光阻值变大，通光时阻值变小，以此带动其他器件输出信号。这个东西并不能精确获取滑台实时的运行位置，只能用于控制滑台运动到某一固定位置触发信号停止运动用。</p> 
+<p style="text-align:center;">&nbsp;<img alt="" height="183" src="https://img-blog.csdnimg.cn/a28a7a83779c465681e2b80d243c6cd4.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="383"></p> 
+<p style="text-align:center;">&nbsp;图1.5.3 光电开关</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 根据这些设备和我个人做过的项目，我还能想到一些其他比较好玩的实时测量方案：超声波测距（精度mm级），tof测距（mm级），拉/压力转换（未知），光强转换（未知），类光盘原理的检测、类磁盘原理的检测等。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 这个部分我为什么要单独拎出来说呢？因为<span style="color:#fe2c24;"><strong><span style="background-color:#f9eda6;">安全</span></strong></span>重于一切！切不可将滑台超限运行，不然容易造成不可挽回的后果。此次项目中我的KK40模组太短了，所以我就没安装<s>高端大气上档次的</s>光/磁栅尺条，我仅在KK40模组的两端各安装了一个欧姆龙的SX674光电开关，其内部有一对红外接/发光管和一个npn型三极管，挡光时输出端导通接地，通光时输出端截止悬空。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 到这里，电机的物理实体部分内容已经结束，我们总结回顾一下流程：电机的各种类型 -&gt; 开/闭环步进电机 -&gt; 步进电机的工作原理 -&gt; 步进电机的特征参数 -&gt; 平移运动传动方式 -&gt; 轴联器 -&gt; 电机M相N线 -&gt; 驱动器步数细分&nbsp; -&gt; 位置获取，下面我将对整体控制的一些重要参数进行理论计算。</p> 
+<p></p> 
+<h3 id="6.%20%E9%80%9F%E5%BA%A6%E3%80%81%E5%8A%A0%E9%80%9F%E5%BA%A6%E5%92%8C%E6%AD%A5%E8%BF%9B%E9%95%BF%E5%BA%A6%E7%AD%89%E5%8F%82%E6%95%B0%E7%9A%84%E8%AE%A1%E7%AE%97%E6%96%B9%E6%B3%95"><a name="t6"></a>6. 速度、加速度和步进长度等参数的计算方法</h3> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 万事俱备，只欠东风。接下来我将对整体运动的参数进行理论计算，这些重要的参数包括：1. 脉冲数量如何转换为实际运动距离；2. 脉冲速度如何转换为实际运动速度； 3. 如何合理控制电机加减速运动。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1. 首先是脉冲数量如何转换为实际运动距离，这里的脉冲指的是我们发送给脉冲型驱动器的脉冲，从上文我们可知两点：</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1) 驱动器具有细分功能，输入Pn个脉冲转动一圈（360°）；</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2) 转轴具有导程，假设转轴导程为Dl (单位 毫米 mm）。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;那么当输入x个脉冲时，电机转轴转动角度： <img alt="\Theta = \frac{x}{Pn}\cdot 360^{\circ}" class="mathcode" src="https://latex.csdn.net/eq?%5CTheta%20%3D%20%5Cfrac%7Bx%7D%7BPn%7D%5Ccdot%20360%5E%7B%5Ccirc%7D"> ，对应转轴步进距离：<img alt="L= \frac{Dl}{360^{\circ}}\cdot \Theta = \frac{Dl}{360^{\circ}}\cdot \frac{x}{Pn}\cdot 360^{\circ} = \frac{Dl\cdot x}{Pn} \left ( mm \right )" class="mathcode" src="https://latex.csdn.net/eq?L%3D%20%5Cfrac%7BDl%7D%7B360%5E%7B%5Ccirc%7D%7D%5Ccdot%20%5CTheta%20%3D%20%5Cfrac%7BDl%7D%7B360%5E%7B%5Ccirc%7D%7D%5Ccdot%20%5Cfrac%7Bx%7D%7BPn%7D%5Ccdot%20360%5E%7B%5Ccirc%7D%20%3D%20%5Cfrac%7BDl%5Ccdot%20x%7D%7BPn%7D%20%5Cleft%20%28%20mm%20%5Cright%20%29"></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 假设步数细分 Pn = 6400 Pul/rev，转轴导程 Dl = 1 mm/rev，脉冲数量 x = 25 Pul，那么最终步进的长度为：<img alt="L = \frac{Dl\cdot x}{Pn} = \frac{1\cdot 25}{6400} \approx 0.0039mm = 3.9um" class="mathcode" src="https://latex.csdn.net/eq?L%20%3D%20%5Cfrac%7BDl%5Ccdot%20x%7D%7BPn%7D%20%3D%20%5Cfrac%7B1%5Ccdot%2025%7D%7B6400%7D%20%5Capprox%200.0039mm%20%3D%203.9um"></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 似乎看上去步进电机最小步进距离能到纳米级别，但实际上步进电机不太可能实现这个精度，有的驱动器会积累一定数量脉冲后才前进最小单位的一步，所以具体精度需要自己实测。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2. 其次是脉冲速度如何转换为实际运动速度，这里的脉冲同样指的是发送给脉冲型驱动器的脉冲，脉冲的速度等价于脉冲的频率</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 其他参数同上，假设输出的脉冲频率为 Fp（单位 Pul/s），那么电机转轴转动速度为：<img alt="F_{\Theta} = \frac{Fp}{Pn}\cdot 360^{\circ} \left ( ^{\circ}/s \right )" class="mathcode" src="https://latex.csdn.net/eq?F_%7B%5CTheta%7D%20%3D%20%5Cfrac%7BFp%7D%7BPn%7D%5Ccdot%20360%5E%7B%5Ccirc%7D%20%5Cleft%20%28%20%5E%7B%5Ccirc%7D/s%20%5Cright%20%29"></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;对应转轴步进速度：<img alt="F_{L} = \frac{Dl\cdot Fp}{Pn} \left ( mm/s \right )" class="mathcode" src="https://latex.csdn.net/eq?F_%7BL%7D%20%3D%20%5Cfrac%7BDl%5Ccdot%20Fp%7D%7BPn%7D%20%5Cleft%20%28%20mm/s%20%5Cright%20%29"></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 假设脉冲频率为 3200 Pul/s，那么步进速度为：<img alt="F_{L} = \frac{Dl\cdot Fp}{Pn} = \frac{1\cdot 3200}{6400} = 0.5 \left ( mm/s \right )" class="mathcode" src="https://latex.csdn.net/eq?F_%7BL%7D%20%3D%20%5Cfrac%7BDl%5Ccdot%20Fp%7D%7BPn%7D%20%3D%20%5Cfrac%7B1%5Ccdot%203200%7D%7B6400%7D%20%3D%200.5%20%5Cleft%20%28%20mm/s%20%5Cright%20%29"></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3. 如何合理控制电机加减速运动：【有些人可能会问为什么加减速还需要算法？直接上对应频率的脉冲不就好了？】，这个想法在低速情况是可以随便操作的，但是高速情况下对电机的启动并不友好（就像手动挡汽车，哪有起步就挂6档的）。每个电机都会有最大的功耗范围，在高负载的情况下，电机的启动电流大部分用于提高转矩而不是速度，如果直接上一个高速度的脉冲，电机启动时电流分配并不能将足够的能量用于速度驱动，驱动器控制电机的电流会存在不可控性，因此在高负载高速度的应用中有一个合理的加速阶段是必然的。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 目前现在业界有两种较为成熟加减速算法：S曲线加速算法（TpSA = Time per Step Algorithm）（扩展版的梯形加速算法） 和 SpTA（Step per Time Algorithm）加速算法。当加速到同一速度时，这两者的区别在于前者是设定加速步数去计算每一步的速度（脉冲频率），后者是设定加速时间片去计算单位时间片内需要走多少步。（SpTA算法我不细讲，有需要的同学可以自己去收集资料看看，控制的原理不同但是道理相通）SpTA算法甚至不需要硬件PWM生成器（STM32单片机上的一个组件），对于片上硬件资源较少的单片机很友好，但是它的算法需要一直运行在比最高速度还快的中断中调整脉冲输出，对于专用于驱动驱动器的芯片（<s>搁这套娃呢</s>）来说并不影响什么，但是我的系统设计不允许中断这么频繁，因此我在仔细考虑了它在STM32上的应用便利性后决定采用S曲线加速算法。如下表2给出一个两者的比较，不懂的参数先留着，后面会提到（<em>这两者就是计算机中典型的要么空间换时间（S曲线），要么时间换空间（SpTA），看选择的单片机和对控制的需求进行取舍吧</em>）（<s>其实如果不需要特别平滑的加减速效果直接用离散化梯形加速算法就可以了，计算量小中断少不折腾，这两个平滑化算法确实让单片机的控制变得复杂了不少，需要时间去倒腾</s>）。</p> 
+<p style="text-align:center;">表2 S曲线加速与SpTA算法的对比</p> 
+<div class="table-box"><table align="center" border="1" cellpadding="1" cellspacing="1"><tbody><tr><td style="text-align:center;"></td><td style="text-align:center;">S型曲线加速算法</td><td style="text-align:center;">SpTA加速算法</td></tr><tr><td style="text-align:center;">算法计算量</td><td style="text-align:center;">大，且有浮点数</td><td style="text-align:center;">小，且为整数</td></tr><tr><td style="text-align:center;">控制效果</td><td style="text-align:center;">根据离散化程度决定</td><td style="text-align:center;">根据中断速度决定</td></tr><tr><td style="text-align:center;">RAM使用</td><td style="text-align:center;">需预计算，RAM占用大，与控制效果有关</td><td style="text-align:center;">实时处理，RAM占用小，与控制效果无关</td></tr><tr><td style="text-align:center;">CPU效率</td><td style="text-align:center;">运行前预计算量大，运行时根据离散化程度决定</td><td style="text-align:center;">运行前计算量小，运行时取决于中断速度</td></tr></tbody></table></div> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; S曲线实现方法已经有很多人讲过（<s>我就不重复造轮子了</s>），后面在第三部分<span style="color:#ff9900;">程序开发(3/4)</span>我再细讲我的S型曲线加速算法是如何实现的。接下来我讲一下步进电机的实际步进精度的测量方法。</p> 
+<p></p> 
+<h3 id="7.%20%E7%B2%BE%E5%BA%A6%E7%9A%84%E6%B5%8B%E9%87%8F"><a name="t7"></a>7. 精度的测量</h3> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 本节的测量方法最精细的部分为实验室方法，没有相关设备的童鞋可以了解一下就行，最后我会给我出我的设置对应的实际精度，不同电机和驱动器和丝杆会有不一样的效果，结论仅供参（yu）考（le）。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 精度这个概念其实很广泛，我将这个概念细化为几个具体的参数：<span style="color:#ff9900;">最小步进精度</span>（分辨率、颗粒度）、<span style="color:#1c7331;">定位精度</span>、<span style="color:#4da8ee;">重复定位精度</span>。（整体采用数控机床相同的的评价方式）</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1）<span style="color:#ff9900;">最小步进精度</span>这个最好理解，就是上文中给予驱动器一个脉冲时电机带动滑台运动的距离，类比于同样尺寸的屏幕，分辨率越高，每个像素的颗粒大小就越小，显示效果越清晰，等同于最小步进精度这个参数值越小，运动效果越精细（注意，不是精准）。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2）<span style="color:#1c7331;">定位精度</span>这个也好理解，就是我从同一个起点给100个脉冲让电机带动滑台单方向运动的距离是不是真实对应100个脉冲应有的距离（单次运行误差）。在实际使用时因为加工误差多半不会这么精确，比如我想让滑台运动 10.00mm，但是可能它实际的运动距离为 9.99mm 或 10.02mm，这时定位精度为 10.02-9.99=0.03mm。这个参数会直接影响加工的精度。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3）<span style="color:#4da8ee;">重复定位精度</span><span style="color:#494949;">这个也好理解，就是我从同一个起点让滑台运行同一个程序进行相同的运动指令后滑台停止的位置，</span>比如我每次计划让滑台运动 10.00mm，但是它实际的运动距离为 9.98mm 或 10.01mm，这时重复定位精度为 （10.02-9.99）/ 2 = 0.015mm，一般表示方法为 10.00±0.015mm。这个参数会影响同一批次的零件一致性。</p> 
+<p></p> 
+<p>【测量待补充】</p> 
+<p></p> 
+<p>扩展阅读：<a class="link-info" href="https://zhuanlan.zhihu.com/p/298453539" rel="nofollow" title="步进电机的原理是什么">步进电机的原理是什么</a></p> 
+<p></p> 
+<h2 id="%E4%BA%8C%E3%80%81%E4%BB%8B%E7%BB%8DSTM32"><a name="t8"></a><span style="color:#956fe7;">二、介绍STM32</span></h2> 
+<h3 id="1.%20%E5%B8%B8%E7%94%A8%E5%BC%80%E5%8F%91%E8%8A%AF%E7%89%87%E7%9A%84%E7%A7%8D%E7%B1%BB"><a name="t9"></a>1. 常用开发芯片的种类</h3> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;目前常用的开发芯片种类主要有PLC、DSP、FPGA、ARM架构单片机、RISC-V架构单片机和51单片机等一系列各种不同功能和用途的芯片。PLC（Programmable Logic Controller）是一个集成化的开发环境，开发语言主要为梯形图<strong>，</strong>主要用在环境较为严苛（防尘、防酸碱、防水、防油雾、防高低温、防电磁干扰和防射线等等）的工业生产中；DSP（Digital Signal Processor）全称数字信号处理器，开发语言主要是C语言，由于内置硬件算数电路，可以在单指令周期内完成其他芯片好几个指令周期完成的运算任务（运算速度成倍增加），因此最主要的用途是运算并处理大量的整数、浮点数据；FPGA（Field Programmable Gate Array）全称是现场可编程逻辑门阵列，它自身可通过编程的方式变为各种复杂度不太高的芯片，实现在芯片上搭建硬件电路，编程语言为VHDL和Verilog，主要用在处理实时性较强、吞吐数据量大和不适合为了某一项任务单独设计一类芯片且存在升级需求的场景；ARM和RISC-V架构单片机主要适用于业务逻辑处理，可用的编程语言挺多，主流为C、C++、Python和Java等，主要用于处理流程化业务内容；51单片机应该是很多人入门学习的内容，我也是从8位51单片机入门并制作了一个音乐播放器（本科社团竞赛），主要以C语言开发，其功能比较简单，主要用于低复杂度、低成本的开发中。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;（<em>早些年在我入门32位单片机前我还考虑过要不要先试试16位单片机，比如TI（德州仪器）家超低功耗的 MSP430，但觉得不如一步到位，因此直接上32位单片机来学习。整理好了思路准备学习32位单片机的时候发现它和8位51单片机的差别太大，整体复杂程度完全不在一个量级，自学可能hold不住，因此我打算找一些0基础入门的教学视频和资源来看看。在我入门STM32单片机的年代有两个比较出名的教学团队：正点原子和野火，这两家各有各的特色，都有自己的交流学习、资源分享论坛，整体来说都挺不错。</em>）</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;FPGA是个好东西，但是它有个巨大的缺点：过于昂贵。那么针对这次项目呢，我选择了成本较为均衡的ARM架构单片机，这家伙既有较为丰富的片上资源，又能较好的处理业务逻辑，实在是当仁不让哈。那么说到ARM架构单片机，就绕不开一家赫赫有名的半导体企业：意法半导体（ST），他们家的STM32单片机在几年前那是火的一塌糊涂，好多地方都能见到他的身影，下面我大概讲一下他家的ARM单片机分类。</p> 
+<p></p> 
+<h3 id="2.%20STM32%E7%B3%BB%E5%88%97ARM%20Cortex-M%E6%9E%B6%E6%9E%84%E7%9A%84%E8%8A%AF%E7%89%87"><a name="t10"></a>2. STM32系列ARM Cortex-M架构的芯片</h3> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;STM32家主要的32bit ARM Cortex-M系列芯片分类如下图2.2.1所示。</p> 
+<p style="text-align:center;"><img alt="" height="746" src="https://img-blog.csdnimg.cn/b4fdfe1b98aa40ab9f35759e2c67dbef.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="661"></p> 
+<p style="text-align:center;">&nbsp;图 2.2.1 STM32 MCUs 32bit ARM Cortex-M 产品线</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;从图中的左边可以看出STM32的分类主要有四种：高性能、主流、低功耗和无线，在每一种内又根据性能（<s>其实是价格</s>）区别进行了细分，从左往右整体能力增强。其中每一个小黄框代表一个系列，每个系列下根据内存大小和外设区别还会有更多的细分，白框中的第一行CoreMark代表该系列芯片的计算能力，分数越高计算能力越强，第二行和第三行为内核时钟频率和内核架构，比如STM32WL下为双架构核心，分别为48MHz的 Cortex-M4内核和48MHz的Cortex-M0+内核。（目前我用得比较多的是F1和F4系列，后面打算也试试G4和L4/5系列）</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;这么多种类、系列的芯片是不是让你看得眼花缭乱了？小问题~ 下面来看看我们应该怎样针对项目进行芯片选型。</p> 
+<p></p> 
+<h3 id="3.%20%E8%8A%AF%E7%89%87%E9%80%89%E5%9E%8B%E7%9A%84%E6%96%B9%E6%B3%95"><a name="t11"></a>3. 芯片选型的方法</h3> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;（<s>不考虑成本，芯片选型就会轻松很多</s>）芯片选型的意义在于：用合适的钱、买到有一定性能冗余、片上资源足够支撑项目开发和芯片尺寸与封装符合开发需求等等。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;首先我们来看看这次项目<span style="color:#fe2c24;">需要</span>些什么（需求分析）：</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1. 与电脑通信 = USB OTG 或 UART；</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 2. 输出8路硬件PWM = 至少8+4个TIMER（其中4为主从型）；</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 3. DMA（Direct Memory Access）；</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 4. 限位器读取 = 较多的GPIO（General Purpose Input Output）；</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; 5. 较好的计算能力 = 较高的主频且最好能有FPU（Float Point Unit）。</p> 
+<p>&nbsp; &nbsp; &nbsp; 针对上面的需求我们就可以使用STM32官方提供的选型手册去选择我们需要的芯片了（我用的选型手册版本是19年的比较老了，很多新的芯片都不在上面，影响不大），如图2.3.1所示，大的四个标题对应图2.2.1中四个主要的种类，每个种类下的细分就是具体的系列。</p> 
+<p style="text-align:center;"><img alt="" height="620" src="https://img-blog.csdnimg.cn/fe666cea1e054c278250f39a746f27fa.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="617"></p> 
+<p style="text-align:center;">图 2.3.1 选型手册目录</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;那么选型开始！首先考虑到我们需要使用FPU，因此我们的选择范围直接来到了F3和F4系列，这里有一个很关键的点：现在STM32 F3和F4在国内<span style="color:#ff9900;">出货量</span>较大的是F4，F3没F4那么容易买到，因此这里我直接选择了F4（上购物软件直接搜就知道了）。F4下面也有很多分类，具体我们看图2.3.2所示（来自<a class="link-info" href="https://www.st.com/zh/microcontrollers-microprocessors/stm32f4-series.html" rel="nofollow" title="官网截图">官网截图</a>）。</p> 
+<p style="text-align:center;"><img alt="" height="791" src="https://img-blog.csdnimg.cn/229f15b678e9493fad66b4311764a5fa.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="746"></p> 
+<p style="text-align:center;">&nbsp;图 2.3.2 STM32F4芯片一览</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;从图中我们可以看到，STM32F4的产品线种类挺多，属于简化版的F411、属于基础版的F407和属于进阶版的F429这几个型号都是较为常用的型号，有个比较好理解的方法就是：简化版对应于iPhone mini、基础版对应于 iPhone、进阶版对应于iPhone Pro。根据项目的需要，我们需要一个主频稍微高一点但是系统冗余不太大的MCU，此时我们将目光瞄准到了F411、F405和F407身上，由于这张图能提供的信息比较少，我们又转回去看选型手册，这里我们以F407为例，如图2.3.3所示。</p> 
+<p style="text-align:center;"><img alt="" height="513" src="https://img-blog.csdnimg.cn/2812484657484bedbd0e11122b74d216.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="1018"></p> 
+<p style="text-align:center;">&nbsp;&nbsp;图2.3.3 F407系列片上资源详列</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;从图中我们可以知晓很多信息，比如芯片型号命名、时钟主频、核心架构、Flash区大小、RAM大小、封装类型、IO数量、最小最大电压和一系列片上资源的数量等等，经过选型手册中的对比F411 TIMER数量不够，F405和F407的一些细分型号在各方面都满足要求，这时我们去购物软件看看哪一款芯片性价比、出货速度更合适，经过对比发现小批量货件F407更容易购买，随后我们又继续看选型手册去决定采用哪一细分型号，这里我们就需要仔细看上图中F407ABCD的具体内容了，每个厂家在对器件命名时都是非常有规律的，我们从下图2.3.4就可以直接从命名知道某一款芯片的一些主要特征（这图出现在选型手册最后面）。</p> 
+<p style="text-align:center;"><img alt="" height="551" src="https://img-blog.csdnimg.cn/4106e11decda45098c90d56911794476.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="970"></p> 
+<p style="text-align:center;">&nbsp;图2.3.4 STM32 命名规则</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;根据项目需求，我打算使用S曲线加速算法（空间换时间），因此我选择的芯片需要运行时用来存储变量，对应的也就是RAM大小，不过这里RAM大小都是固定的（<s>所以也没什么好选的）</s>，因此我们最后只需要选择合适的Flash大小（存放程序和常量）和引脚数量（GPIO数量）即可，最终我敲定选择了F407VGT6（随后我去买来了一个现成的核心板准备调试，随后发现USB OTG无法正常工作，仔细看了看原理图才发现这破板子USB设计时没接上拉电阻导致识别失败，不情不愿的我又去找了一块设计合理的F407板子买回来发现这个可以用，所以下面的项目其实是基于F407ZGT6开发的，这两者都可以，只是引脚数量略有不同）。</p> 
+<p></p> 
+<h3 id="4.%20%E7%8E%B0%E6%9C%89%E7%9A%84%E5%9B%BD%E4%BA%A7%E6%9B%BF%E4%BB%A3%EF%BC%88%E5%9F%BA%E4%BA%8E2021.10.24%EF%BC%89"><a name="t12"></a>4. 现有的国产替代<em>（基于2021.11.7）</em></h3> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;好家伙，我直呼好家伙，因为一些客观因素，现在芯片价格高到离谱了，原来一两块钱一片的的STM32F103现在都要几块十几块了，随着国产的发展也出现了很多类似STM32类似的ARM Cortex-M芯片，这里我只列举一些撰写博文时了解的厂家（有一些并没有出货）（有一些可以直接平替）【<span style="color:#fe2c24;">排名不分先后</span>】：GD32（兆易创新）、AT32（雅特力）、CH32（沁恒微）、HK32（航顺芯片）、APM32（艾派克）、MM32（上海灵动）、HC32（华大半导体）、CKS32（中科芯）等等，欢迎补充。</p> 
+<p></p> 
+<h3 id="4.%20STM32F4xx%E7%9A%84%E5%BC%80%E5%8F%91%E6%96%B9%E6%B3%95"><a name="t13"></a>5. STM32F4xx的开发方法</h3> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;目前STM32的芯片开发软件有几种：</p> 
+<p>&nbsp; &nbsp; &nbsp;&nbsp; 1. 最常规的方法就是使用Keil软件（对编程极不友好，无法代码自动补全，界面丑，但是开发环境集成度高不折腾）；</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;2. VSCode + 插件（对编程极其友好，代码自动补全，界面优雅，但是需要自己去调整安装各种插件比较折腾）；</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;3. STM32 Cube MX + 任意以上任意一种方式，STM32 Cube MX是STM32自家开发的图形化参数配置软件，对于一些代码重复性很高的初始化内容完全可以用他来提高配置效率，挺好用一软件。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;STM32主要使用<span style="color:#ff9900;">C语言</span>编程，编程时可以选择：直接操作寄存器（ 运算速度最快，也是最复杂的，功力深厚才行）、标准外设库版本（速度略慢一些，需要一些基础）和STM32官方提供的HAL库版本（速度最慢，上手容易），当然也有用Python的老铁些。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;我开发一直用的Keil，虽然它界面是真的老旧，但是不折腾，这点比较好，因此后面的项目也是用 Keil uVision5 + 标准外设库来开发。</p> 
+<p></p> 
+<h3 id="5.%20STM32CubeMX%E8%BD%AF%E4%BB%B6%E7%9A%84%E4%BD%BF%E7%94%A8"><a name="t14"></a>6. STM32CubeMX软件的使用</h3> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;由于这次项目我并没有用STM32 Cube MX软件，而是使用的官方例程组合正点原子版本来开发，因此这里暂时不做过多的介绍，只存放一些链接供大家参考学习。新上手STM32的小伙伴我并不建议依赖这个软件来开发，它内部生成的代码是基于HAL库的，很多东西都没办法深究，debug的时候有些问题不容易发现出在哪，除非你能对他生成的大部分重要配置代码的具体作用和含义了如指掌，否则还是好好的从基础的标准外设库配置学起。</p> 
+<p><a class="link-info" href="https://www.st.com/zh/development-tools/stm32cubemx.html" rel="nofollow" title="STM32CubeMX官方链接">STM32CubeMX官方链接</a>、<a class="link-info" href="https://blog.csdn.net/as480133937/article/details/98885316" title="【STM32】STM32 CubeMx使用教程一--安装教程">【STM32】STM32 CubeMx使用教程一--安装教程</a>、<a class="link-info" href="https://blog.csdn.net/AngeloBaby/article/details/79358078" title="STM32CubeMX教程之简介及基本使用">STM32CubeMX教程之简介及基本使用</a></p> 
+<p></p> 
+<h3 id="6.%20%E4%BB%A3%E7%A0%81%E7%A7%BB%E6%A4%8D"><a name="t15"></a>7. 代码移植</h3> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;这次的代码我是用官方STM32 USB-Host-Device Lib V2.2.1组合正点原子的sys文件来开发的，具体过程大致描述一下，有时间了再来更新详细图文版本。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;1. 下载STM32 USB-Host-Device Lib V2.2.1压缩包，在官网&gt;工具与软件&gt;嵌入式软件&gt;微控制器软件&gt;STM32微控制器软件&gt;STM32固件&gt;产品选择器&gt;STSW-STM32046&gt;获取软件，当然这里也有直达链接：<a class="link-info" href="https://www.st.com/zh/embedded-software/stsw-stm32046.html" rel="nofollow" title="STSW-STM32046">STSW-STM32046</a>；这个界面开始的地方找到一行概述、文件、工具与软件，点击文件，把<a class="link-info" href="https://www.st.com/zh/embedded-software/stsw-stm32046.html#documentation" rel="nofollow" title="用户手册UM1021">用户手册UM1021</a>也下载下来，这个文档是对这个库的系统性讲解，是想要深入研究STM32底层USB通信必不可少的入门文档（全英文，英语不好的同学看着可能会比较吃力）；</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;2. 解压Lib压缩包后后获得3个文件夹，分别是Libraries（CMSIS底层驱动、USB库和标准外设库）、Project（各官方开发板例程）和Utilities（关联文件），这时我们直接打开 Project\USB_Device_Examples 能看到STM32官方已经为我们写好了9种例程，对于这个项目我用的是VCP_Loopback这个例程（原因在后面讲解USB时再说），它实现的效果为被Windows电脑识别为COM端口去模拟串口通信（不过此时串口的通信速率为USB-FS的速度，也就是12Mbps），它会把所有我们发给他的消息返回回来，这也就是Loopback的含义；</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;3. 打开 Project\USB_Device_Examples\VCP_Loopback\MDK-ARM 这个文件夹就能看到这个例程的工程文件，用Keil打开后可以看到凌乱不堪的工程目录如图2.7.1所示，经过整理后得到如图2.7.2所示；</p> 
+<p style="text-align:center;"><img alt="" height="488" src="https://img-blog.csdnimg.cn/baa0a216e2954a6e96ba1e5471ac34ec.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_16,color_FFFFFF,t_70,g_se,x_16" width="314">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;<img alt="" height="474" src="https://img-blog.csdnimg.cn/a4ceeaa6b22b4c08b232396668002060.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_17,color_FFFFFF,t_70,g_se,x_16" width="410"></p> 
+<p style="text-align:center;">&nbsp;图 2.7.1 凌乱的工程文件&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;图2.7.2 整齐的工程文件</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;4. 在工程目录下单击右键进入Manage Project Items，在Project Targets中选中STM324XG-EVAL_USBD-FS，再点击下方Set as Current Target确定现在打开的项目为STM32F4XG系列芯片，并且采用USB-Device-FS模式，如图2.7.3所示；</p> 
+<p style="text-align:center;"><img alt="" height="446" src="https://img-blog.csdnimg.cn/832b7c357d794a258de5e0b8361bc1a7.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="596"></p> 
+<p style="text-align:center;">&nbsp; 图 2.7.3 选择STM324XG-EVAL_USBD-FS</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;5. 这时我们就已经可以编译并下载程序到核心板中尝试一下运行效果了，将核心板的USB-Slave接口接到PC的USB接口上，在PC端我们用串口调试助手发送文字数据给STM32F407ZGT6单片机，我们就可以在信息返回的窗口中看到我们发送给单片机的信息；</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;6. （可选）将正点原子的三个文件复制到目录下并添加inlucde path。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;这样一个可用的工程文件就算创建完毕。</p> 
+<p>【待修改开启FPU的方法】</p> 
+<p></p> 
+<p>当然实在是想用STM32 Cube MX的同学可以参考<a class="link-info" href="https://blog.csdn.net/yxy244/article/details/102620249" title="这篇博文">这篇博文</a>，只需要将时钟树部分的参数修改成你所用对应板子的即可。</p> 
+<p></p> 
+<h3 id="7.%C2%A0%20STM32F407%E7%89%87%E4%B8%8A%E8%B5%84%E6%BA%90%E4%BB%8B%E7%BB%8D"><a name="t16"></a>8. STM32F407片上资源介绍</h3> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;STM32F407的片上资源主要指的是存储和外设，片上资源其实从选型手册就可以看出，这里我们简单罗列一下：</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;1.&nbsp;核心：ARM 32-bit Cortex-M4 CPU，最高时钟频率168 MHz，带有FPU（浮点运算单元）和DSP（数字信号处理器）；</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;2. 最高1 Mbyte Flash（存放程序和常量），192+4 Kbytes SRAM（存放堆、栈和变量）；</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;3. 自带灵活的静态存储控制器，可用于Flash、SRAM、PSRAM、NOR和NAND内存</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;4.&nbsp;LCD 并行接口，支持8080/6800模式</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;5. 工作电压范围1.8 V 至 3.6 V</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;6.&nbsp;3×12位 A/D 转换器，多达24通道，2×12位 D/A 转换器</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;7.&nbsp;常规用途的2路DMA，带有16个数据流和独立的FIFO</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;8.&nbsp;至多17个定时器，包含12个16位定时器和2个32位定时器，最高速度168MHz，每个都有4通道的PWM输出</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;9. 至多140个I/O口且带有中断功能，136个IO速度可达84MHz，138个IO能容忍5V</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;10. 至多15个通信接口，包含最多3路I2C、4路USART与2路UART、3路SPI、2路CAN和SDIO</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;11. USB2.0全速 从设备、主设备控制器，外接高速PHY芯片可开启高速USB2.0</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;12. 10/100 有线网络MAC</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;13. 8到14位并行摄像机接口，最高速度54 Mbytes/s</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;14. 真随机数生成器</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;15.&nbsp;CRC循环校验码计算单元</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;16.&nbsp;RTC（实时时钟），亚秒级精度，硬件日历</p> 
+<p></p> 
+<h3 id="8.%20keil%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E7%9A%84%E6%90%AD%E5%BB%BA"><a name="t17"></a>9. keil开发环境的搭建</h3> 
+<p>&nbsp; &nbsp; &nbsp;&nbsp; 在国内，仅用于个人学习、在不涉及多人或商业、不用于违法犯罪的情况下，<span style="color:#d7d8d9;"><s>使用非正版软件一定程度上不涉及严重的法律侵权问题</s></span>，但不管怎样我还是鼓励大家多使用正版，毕竟人家做开发也需要经济支持去维护软件，这样我们才能有更好的开发软件可用。</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;Keil开发环境搭建其实比较简单，主要就两个步骤：</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;1. 下载、安装、激活Keil uVision5软件；（目前我用的是5.26，写下这句话时最新版是5.36）</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;2. 在Keil中自带的包管理器中下载STM32F4对应的STM32F4XX-DFP包（Device Fundamental Package，应该是这个）。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;具体的步骤可以参考别的博文，我就不重复造轮子了。</p> 
+<p></p> 
+<h2 id="%E4%B8%89%E3%80%81%E4%BB%8B%E7%BB%8DQt"><a name="t18"></a><span style="color:#956fe7;">三、介绍Qt</span></h2> 
+<h3 id="1.%20%E4%BB%80%E4%B9%88%E6%98%AFQt"><a name="t19"></a>1. 什么是Qt</h3> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Qt官网：<a class="has-card" href="https://www.qt.io/zh-cn" rel="nofollow" title="Qt中文官网 | 为嵌入式和桌面应用开发而生的跨平台软件开发平台"><span class="link-card-box"><span class="link-title">Qt中文官网 | 为嵌入式和桌面应用开发而生的跨平台软件开发平台</span><span class="link-link"><img alt="" class="link-link-icon" src="https://csdnimg.cn/release/blog_editor_html/release1.9.8/ckeditor/plugins/CsdnLink/icons/icon-default.png?t=M0H8">https://www.qt.io/zh-cn</span></span></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Qt在我看来是一个有些类似Visual Studio（VS）的软件，它的主要用途是用于编写APP（面向用户的程序，运行在各个平台：Windows、Linux、Android、iOS等），在你安装了VS的情况下可以只下载插件版Qt加载进VS中来使用，如果没有VS，也可以使用Qt自家的Qt Creator软件界面来开发。</p> 
+<p></p> 
+<h3 id="2.%20%E5%A6%82%E4%BD%95%E4%BD%BF%E7%94%A8Qt"><a name="t20"></a>2. 如何使用Qt</h3> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 这里我们主要是开发Windows平台的软件，所以编程语言以<span style="color:#ff9900;">C++</span>为主。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 早些年用过VB的童鞋应该还记得200x年时那灰蒙蒙而粗糙的图形用户界面（Graphical User Interface，GUI）设计，对比如今立体、彩色还有动画的GUI，简直就是时代变化的写照。话说回来，Qt开发软件和其他平台一样，可以笼统的分为两个部分：<span style="color:#4da8ee;">界面设计</span>和<span style="color:#b95514;">界面响应回调函数</span>。<s>打个比方，你的腰就是界面，我在你的腰上使劲戳了一下，你就会感受到刺激然后立即弹射起步，那么回调函数的响应就等同于你的弹射起步这个过程</s>。<span style="color:#4da8ee;">界面设计</span>指的是用户打开软件后看到的界面，包括但不限于：按钮、文本框、输入框和复选框等各种用于与用户交流信息的媒介，一个良好的界面设计主要体现在：排版清晰、内容简洁美观和主次分明（其实与海报和演讲等是相通的），<s>因此我建议大家都去学学美术和艺术什么的，陶冶一下情操（误）</s>；<span style="color:#b95514;">界面响应回调函数</span>顾名思义，是指对界面内交互内容的响应，这个响应的结果就是（<s>弹射起步</s>）触发回调函数（handler），比如我在界面中单击了一个按钮，那么在程序后台中就会触发（运行）这个按钮被单击时对应的响应函数。因此在开发时，我们就主要针对上述两个部分进行开发。</p> 
+<p></p> 
+<h3 id="3.%20Qt%E5%BC%80%E5%8F%91%E7%8E%AF%E5%A2%83%E7%9A%84%E6%90%AD%E5%BB%BA"><a name="t21"></a>3. Qt开发环境的搭建</h3> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;要想使用Qt，就必须先安装Qt。Qt的安装环境在5.12版本之前还算比较简单，都是独立的exe安装文件，安装好就可用。5.12版本后Qt把安装包集成为一个方便多平台部署的待编译源码包，但是部署方法就变得麻烦了起来：如果选择编译源码，那会像在树莓派上编译OpenCV一样痛苦（<s>别问我为什么知道</s>）；如果选择在线安装，那需要等待在线下载。截至我写到这句话时，Qt的最新版本为6.2，Qt Creator的最新版本为6.0。为了避免过于冗长的编译源码，我选择了<s>不那么痛苦的</s>在线安装，这里有<a class="link-info" href="https://blog.csdn.net/yanchenyu365/article/details/110949727" title="一篇博客">一篇博客</a>大家可以参考。（记得要先去Qt官网注册一个账号，邮箱即可）</p> 
+<p>（存个链接：<a href="https://mirrors.tuna.tsinghua.edu.cn/qt/official_releases/online_installers/" rel="nofollow" title="Index of /qt/official_releases/online_installers/ | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror">Index of /qt/official_releases/online_installers/ | 清华大学开源软件镜像站 | Tsinghua Open Source Mirror</a>）</p> 
+<p></p> 
+<h3 id="4.%20%E7%95%8C%E9%9D%A2%E7%9A%84%E5%BC%80%E5%8F%91%EF%BC%88*.ui%EF%BC%89"><a name="t22"></a>4. 界面的开发（*.ui）</h3> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;对于第一次开发用户界面的小朋友们可以先看看用于安卓开发的《<a href="http://www.baidu.com/link?url=C_-wYiTSw41cnop2BGZc-s9HZkQwZimi4YytVo_aOUtJWRxK679uFG5UQOHBo56aEFYDzAHh-BMuSYmlj_VgU5GFYb4QdyJP4xMMM_6en3bFDT0aFtfkELkOo946dgqjsKHNzjnj-isfYCK17euO_NqSVjTlGGx4owd5za-14fN2pyQsLecq9uJ5TNCPf7PS" rel="nofollow" title="第一行代码">第一行代码</a>》（<s>当然不是让你去学安卓开发，只是大概看看界面发开的那个部分就行</s>），开发用户界面的核心方法都是一样的：界面设计与回调函数。只不过安卓存在多个不同类型的Activity，Windows平台的软件不一样，但是只要理解到开发界面的核心思想就可以了。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;Qt入门的话我建议就用Qt Creator自带的<span style="color:#fe2c24;">官方例程（Demo）</span>以及<a class="link-info" href="https://doc.qt.io/qt.html" rel="nofollow" title="在线说明文档">在线说明文档</a>，这有个前提：英语要好。如果确实需要看书，这三本是个不错的选择，虽然有点老了，但是很经典：&nbsp;《C++ GUI Qt 4编程（第2版）》、《C++ Qt 设计模式》和《Qt高级编程》。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;说实话根据我的个人经历，我一向不太喜欢一上来就是长篇大论的讲理论，最后再来实践，因为很多时候都是先有了实际问题，然后想办法解决，最后再总结方法为理论。先学理论再实践是一个不太符合实际解决问题逻辑的过程，虽然理论具有广谱性，但是不实践难以深刻明晰理论的意义。下面我们直接讲怎么开发，上手自己操作一遍就明白该怎么做了。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;这里我使用的是Qt Creator和MSVC2019（在线安装时记得勾选）作为IDE来使用，用VS的同学可以参考其他博主的文章。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;首先打开Qt Creator进入欢迎界面，如图3.4.1：</p> 
+<p style="text-align:center;"><img alt="" height="433" src="https://img-blog.csdnimg.cn/97b7379c15ed485bbd9ebe31b2f41c46.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="658"></p> 
+<p style="text-align:center;">&nbsp;图3.4.1 欢迎界面</p> 
+<p style="text-align:center;"></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;在这个界面中我们可以看到Projects、示例、教程和Marketplace，这里的示例就是上文中提到的<span style="color:#fe2c24;">官方例程（Demo）</span>，点开后可以看到各种Qt官方提供的例程，非常具有参考价值。这里我们继续创建自己的项目，点击“ + New&nbsp;”按钮创建新项目，点击后如图3.4.2：</p> 
+<p style="text-align:center;"><img alt="" height="376" src="https://img-blog.csdnimg.cn/70deb54b40994c86a2b2383f22b0c2b2.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="607"></p> 
+<p style="text-align:center;">&nbsp;图3.4.2 新建项目向导</p> 
+<p style="text-align:center;"></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;这里自动选择了 Application(Qt) -&gt; Qt Widgets Application，我们就用这个模板继续创建，这里我们点击 " Choose... "，进入Widgets Application创建向导，如图3.4.3。</p> 
+<p style="text-align:center;"><img alt="" height="388" src="https://img-blog.csdnimg.cn/7a0a66a23818405dbf0923d9e3c7407d.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="621"></p> 
+<p style="text-align:center;">&nbsp;图3.4.3 Widgets Application创建向导</p> 
+<p style="text-align:center;"></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;这里的 名称 是指这个项目的名字，创建路径 是这个项目的文件目录，选择好自己的名称和路径后点击下一步，一直下一步到左方箭头指向" Kits "停下，如图3.4.4。</p> 
+<p style="text-align:center;"><img alt="" height="382" src="https://img-blog.csdnimg.cn/ab6a42202b964fd0aa23cc83f27bb6b3.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="611"></p> 
+<p style="text-align:center;">&nbsp;图3.4.4&nbsp;Kits Selection</p> 
+<p style="text-align:center;"></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;因为这个项目用不到OpenCV，所以这里我们选择MSVC2019 64-bit或MinGW 64-bit都可以，但是如果想用直接安装版的OpenCV就必须选MSVC，不然就得编译OpenCV源码包（<s>还是不要问我怎么知道的</s>），然后我们单击下一步，随后单击下一步完成向导进入项目编辑界面，如图3.4.5。</p> 
+<p style="text-align:center;"><img alt="" height="1128" src="https://img-blog.csdnimg.cn/12a623cb20314c8a9b942eabb74b89a7.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="1200"></p> 
+<p style="text-align:center;">&nbsp;图3.4.5 项目编辑界面</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;这里只有1、2和3是常驻界面，其他的内容会随着我们点击1中不同内容而进行切换。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;点开1中的项目编辑界面，我一般将整体分为7个部分，分别是：（你也可以打开 帮助 -&gt; UI Tour 查看官方向导）</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;1. 软件项目管理界面，这里主要是针对Qt软件项目的管理，包含欢迎界面、编辑界面、设计界面、调试界面、项目设置和帮助，欢迎界面点开就是之前我们打开软件时的界面，可以通过这里去看例程；</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;2. 调试运行界面，在这里我们可以配置项目的编译方式（debug、profile、release）、运行、调试运行和编译。在编写程序时一般选择debug模式配合调试运行，这样我们在运行程序出错时会得到精确的报错，但是这同时会造成运行效率较低的问题；而在发布程序打包时会选择release版本，此时所有不重要的debug内容都会不运行，因此release版的程序运行速度最快；</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;3. 调试输出栏，这里主要有编译问题栏、搜索结果栏等各种栏，分别对应不同编译运行时期的问题分析需求，以及最右边被水印挡住状态栏，这里会有运行状态的提示；</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;4&amp;5. 项目管理界面，我们可以通过切换5的内容来快速找到我们想要找的内容，当5为项目时，4中的内容为树状项目文件目录，在主目录下有一个以.pro结尾的文件，这是我们整个项目的初始化编译条件文件，有点类似Cmakelist或GN文件的效果（<s>不完全一样，大佬轻喷</s>），Headers和Sources文件夹就不用我多说了，懂的都懂，Form文件夹下一般放置界面相关的文件，如果还有界面相关的图片，可以再建立一些文件夹用于存放外部素材；</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;6. 编程界面，<s>拿来写代码，略；</s></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;7. 从左往右是：上一步、下一步、文件选择和函数提示，上下步一般用于搜索、跳转等位置变化较大需要快捷往返时使用，文件选择字面意思，选择当前编程界面的编辑文件，函数提示一般用在函数比较多时快速跳转；</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;8. 文本类型和位置栏，这个文本信息栏的内容我建议大家去了解一下，因为MSVC在处理中文的时候和MinGW不太一样，有时候MinGW跑程序界面时能正常显示中文，但是MSVC就不能（黑坨坨or乱码），大家遇到问题时自己去查一下，一般都能解决。在这一栏最右边是窗体分栏按钮，可以左右上下分栏，对于高分辨大屏幕电脑而言这个功能可以加快开发速度，不用来回切换不同文件的编程界面。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;主界面介绍完，下一步我们开始操作UI文件，这里我们先点开Form文件夹，双击打开.ui文件，如图3.4.6：</p> 
+<p style="text-align:center;"><img alt="" height="507" src="https://img-blog.csdnimg.cn/8e4497829f2848c1b852e60d48de91de.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="770"></p> 
+<p style="text-align:center;">&nbsp;图3.4.6 打开.ui文件</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;打开后如图3.4.7所示：（这是可视化UI开发，对应的也有不可视UI开发，纯代码编写UI界面）</p> 
+<p style="text-align:center;"><img alt="" height="507" src="https://img-blog.csdnimg.cn/20edc801ad6a4759b5523d918db88c91.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="772"></p> 
+<p style="text-align:center;">&nbsp;图3.4.7 UI编辑界面</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;1 为各种各样的界面控件，可以通过按住拖动到2中的方式快速添加；</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;2 为程序运行时会显示的软件界面，界面中的小灰点仅为设计时对齐用，正式运行程序时这些小灰点不会出现；</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;3 为设计界面内控件的树状关系图，其中最上面是个快捷查找输入框，下面的对象就是控件的名称，在代码中使用这些控件时会用到这个名称，类即为C++中的那个类（<s>对就是那个</s>），只不过Qt以大写的Q开头自己封装了很多常用的类方便大家使用，一般都继承于QObject；</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;4 为当前选中的控件的信息窗，通过这里可以修改控件的一些特征，也可以通过QML、XML语言在代码编辑界面通过代码的方式实现信息修改，并且有一些特征这里修改不了，还必须使用代码的方式修改；</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;5 为信号槽编辑器，信号与槽是Qt的一个独门特性，在平时使用时有非常大的用处，这种信息流通方式在我的编程经历中算是最简单而高效（<s>简称优雅</s>）的方法了（说实话MQTT好像也是类似的订阅-发布模式），具体的使用方法和一些原理会在本部分第六小部分讲到，这里可以先简单的看看<a class="link-info" href="http://c.biancheng.net/view/1823.html" rel="nofollow" title="这篇博文">这篇博文</a>。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;这里我们从左边拖一个" Push Button&nbsp;"到软件界面中，效果如图3.4.8所示：</p> 
+<p style="text-align:center;"><img alt="" height="1125" src="https://img-blog.csdnimg.cn/15a2cf4013574257af0194e0ba4f71bc.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="1200"></p> 
+<p style="text-align:center;">&nbsp;图3.4.8&nbsp;拖动" Push Button&nbsp;"到软件界面中</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;从图中我们可以看到一个图标出现在了软件界面中，并且在右侧的对象列表中，在MainWindow-&gt;centralwidget下出现了一个" pushButton "对象，这时我们再拖一个" Push Button&nbsp;"到软件界面中，如图3.4.9：</p> 
+<p style="text-align:center;"><img alt="" height="1125" src="https://img-blog.csdnimg.cn/5a6ae1ccb1f146e3b330e63a1f53509e.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="1200"></p> 
+<p style="text-align:center;">&nbsp;图3.4.9 两个" Push Button&nbsp;"</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;我们可以从图中看到，又出现了一个" pushButton_2 "对象，这俩的对象名称不一样，但都属于同一个QPushButton类，届时我们的UI开发已经结束，我们可以点击左侧的运行或编译运行按钮来跑我们的程序，我们会得到这样的界面，如图3.4.10：</p> 
+<p><img alt="" height="1103" src="https://img-blog.csdnimg.cn/d6a37ebea14446d2bc82cd8445551894.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="1200"></p> 
+<p style="text-align:center;">&nbsp;图3.4.10 软件运行界面</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;你可能会问，为什么点击按钮会没有任何反应？那是因为到目前为止我们只开发了<span style="color:#4da8ee;">界面设计</span>，还没有开发界面对应的<span style="color:#b95514;">响应回调函数</span>，别急，我们后面再讲。</p> 
+<p></p> 
+<h3 id="5.%20%E5%B8%B8%E7%94%A8%E7%9A%84%E5%90%84%E7%B1%BB%E7%BB%84%E4%BB%B6"><a name="t23"></a>5. 常用的各类组件</h3> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;可用于界面设计的控件很多，碍于篇幅不能挨个介绍，并且随着时间的推移Qt可能会给出更多更好用的控件，因此我挑几个经典而常用的控件着重讲一下，其他的可以直接搜索，常用的控件一般都会有使用教程。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;1. 首先是用的最多的按动按钮（pushButton），这里我们打开Qt的<a class="link-info" href="https://doc.qt.io/" rel="nofollow" title="官方文档">官方文档</a>来看，依次点击FramWork Qt 6 -&gt; Qt Core -&gt; 左侧的 <a class="link-info" href="https://doc.qt.io/qt-6/classes.html" rel="nofollow" title="All Qt C++ Classes">All Qt C++ Classes</a>，再点击所引用的首字母P，找到接近末尾的QPushButton点进去，就能看到官方对这个控件最详细的描述，如图3.5.1~4：</p> 
+<p style="text-align:center;"><img alt="" height="264" src="https://img-blog.csdnimg.cn/1413f5d3dea9480b9677c873d80e1c14.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="420"></p> 
+<p style="text-align:center;">图3.5.1 QPushButton Class</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;从图3.5.1中我们可以知道，使用这个按动按钮需要包含的头文件、CMake方法、qmake方法以及它继承的类和继承它的类。</p> 
+<p style="text-align:center;"><img alt="" height="337" src="https://img-blog.csdnimg.cn/038a6f000af54fb289659b7aa4e45cca.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="506"></p> 
+<p style="text-align:center;">&nbsp;图3.5.2 QPushButton Public Functions</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;从图3.5.2中我们可以知道按动按钮的广域函数，左边为函数返回参数类型，绿色为函数名，函数名后括号为传递参数类型，这里的函数用的比较少，因为按钮是需要界面交互的，一般我们会用信号-槽函数来操作它，但是往下拉，我们看不到有信号（Signal）或者槽（Slot）的内容，这时我们要想到它继承了QAbstractButton这个类，于是我们返回最上面点击&nbsp;<a href="https://doc.qt.io/qt-6/qabstractbutton.html" rel="nofollow" title="QAbstractButton">QAbstractButton</a>&nbsp;打开它的说明，如图3.5.3，往下翻此时我们就找到了有关信号（Signal）和槽（Slot）的内容。</p> 
+<p><img alt="" height="616" src="https://img-blog.csdnimg.cn/ccd6afa2ebe74edc8eff2ea448400b7b.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="1200"></p> 
+<p style="text-align:center;">&nbsp;图3.5.3&nbsp;QAbstractButton Class</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;那么信号槽为什么会在这里而不是在QPushButton内呢？还不简单，其他按钮都有这些功能，写一个抽象按钮让其他的各类按钮来继承岂不是很方便？此时你会发现QAbstractButton的属性中有一个" Inherited By: QCheckBox, QPushButton, QRadioButton, and QToolButton "，表明除了QPushButton，其他的按钮也是通过继承QAbstractButton来实现通用的信号槽功能的。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;比较常用的广域函数有：icon、iconSize、setCheckable、setText等。icon用于设置按钮的图标，可以将按钮替换为图片等；iconSize用于设置按钮的大小；setCheckable用于设置按钮是否可以按动；setText用于设置在按钮上显示的文本内容。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;对于按钮，Slots不太常用，常用的为Signals，也就是用户操作界面后按钮发送出的信息（Signal），如图3.5.4所示：</p> 
+<p style="text-align:center;"><img alt="" height="343" src="https://img-blog.csdnimg.cn/356db08d65f04dc5a1564cb33da68147.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_14,color_FFFFFF,t_70,g_se,x_16" width="511"></p> 
+<p style="text-align:center;">3.5.4 QAbstractButton Signals&nbsp;</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;常规的应用中clicked信号基本是必备，每个信号的详细解释可以点函数名进去看，官方给予了相应的阐述，这里我不再赘述。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;2. 第二个必须是<a class="link-info" href="https://doc.qt.io/qt-6/qlineedit.html" rel="nofollow" title="QLineEdit">QLineEdit</a>，用户交互三大顶梁柱之一，用于获取用户输入信息的文本输入框，用户输入后只需要调用 text() 即可，其余函数可自行查询。这里要着重说一下<a class="link-info" href="https://www.zhihu.com/question/48219401/answer/742444326" rel="nofollow" title="正则表达式">正则表达式</a>，Qt用的C++必然也有正则表达式，只不过Qt自己封装为了<a href="https://doc.qt.io/qt-6/qregularexpression.html" rel="nofollow" title="QRegularExpression">QRegularExpression</a>、<a href="https://doc.qt.io/qt-6/qregularexpressionmatch.html" rel="nofollow" title="QRegularExpressionMatch、">QRegularExpressionMatch、</a><a href="https://doc.qt.io/qt-6/qregularexpressionmatchiterator.html" rel="nofollow" title="QRegularExpressionMatchIterator">QRegularExpressionMatchIterator</a><a href="https://doc.qt.io/qt-6/qregularexpressionmatch.html" rel="nofollow" title="QRegularExpressionMatch、">QRegularExpressionMatch、</a>和<a href="https://doc.qt.io/qt-6/qregularexpressionvalidator.html" rel="nofollow" title="QRegularExpressionValidator">QRegularExpressionValidator</a>，通过配合输入用的控件，可以实现其他平台一样的正则表达筛选输入，简单例子可以参考<a class="link-info" href="https://blog.csdn.net/thesby/article/details/46410053" title="这个博文">这个博文</a>。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;3. 第三个同样为必不可少的文本、图像显示控件：<a class="link-info" href="https://doc.qt.io/qt-6/qlabel.html" rel="nofollow" title="QLabel">QLabel</a>，它的用途很广，当用于显示文本时，可用setText实现，文本样式可以通过setStyleSheet方式去设置，当用于显示图像时，需要配合QPixmap使用，甚至不考虑太多其他性能上的问题时，也可以用QLabel播放视频。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;其他的控件有需要的可以自行查看官方文档并看看官方例程，下面我们继续完成按钮控件的<span style="color:#b95514;">响应回调函数</span>开发。</p> 
+<p></p> 
+<h3 id="6.%20%E4%BB%A3%E7%A0%81%E7%9A%84%E5%BC%80%E5%8F%91(*.cpp%20with%20*.ui)"><a name="t24"></a>6. 代码的开发(*.cpp with *.ui)</h3> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;这里我先把之前说到的信号-槽（Signal-Slot）的坑给填上，信号与槽就像人体的神经一样，当你感受到手烫时就会把手挪开，其中传导信息的媒介是神经，信号（Signal）就像是你的手感受到手烫，槽（Slot）就像是把手挪开，连接信号与槽的神经被称之为connect函数，因此经过connect过的Signal与Slot，只要在Signal信号被触发后，必定会调用对应的Slot函数。connect函数有两种使用方法，根据Qt版本区分，这里我只介绍最新版Qt的connect函数使用方法（旧版方法将函数认作字符串无法即时编译检查，只有在编译运行时才会报错，新方法在写代码时就会检查【编译期检查】，减少运行时不必要的bug）：</p> 
+<pre data-index="0" class="set-code-show" name="code"><code class="hljs language-lisp">connect(<span class="hljs-name">sender</span>, <span class="hljs-symbol">&amp;Sender</span>:<span class="hljs-symbol">:valueChanged</span>, receiver, <span class="hljs-symbol">&amp;Receiver</span>:<span class="hljs-symbol">:updateValue</span>)<span class="hljs-comment">;</span></code><div class="hljs-button {2}" data-title="复制" onclick="hljs.copyCode(event)"></div></pre> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;其中sender为信号对象，&amp;Sender::valueChanged为信号对象的发射函数，receiver为槽对象，&amp;Receiver::updateValue为槽对象的接收函数（多提一句，这里还有第五个隐形参数是用于选择连接方式的，针对单、多线程有不同的设置方法）。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;接下来我们继续完成上面的小例子，我们关闭运行的程序，点编辑界面切换到mainwindow.cpp文件，在这句代码：</p> 
+<pre data-index="1" class="set-code-show" name="code"><code class="hljs language-kotlin">ui-&gt;setupUi(<span class="hljs-keyword">this</span>);</code><div class="hljs-button {2}" data-title="复制" onclick="hljs.copyCode(event)"></div></pre> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;后添加下面代码：</p> 
+<pre data-index="2" class="set-code-show" name="code"><code class="hljs language-cobol"><ol class="hljs-ln" style="width:713px"><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n" data-line-number="1"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">connect(ui-<span class="hljs-operator">&gt;</span>pushButton, <span class="hljs-operator">&amp;</span>QPushButton<span class="hljs-operator">::</span>clicked, this, <span class="hljs-operator">&amp;</span>MainWindow<span class="hljs-operator">::</span>showMinimized);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n" data-line-number="2"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">connect(ui-<span class="hljs-operator">&gt;</span>pushButton_<span class="hljs-number">2</span>, <span class="hljs-operator">&amp;</span>QPushButton<span class="hljs-operator">::</span>clicked, this, <span class="hljs-operator">&amp;</span>MainWindow<span class="hljs-operator">::</span>showMaximized);</div></div></li></ol></code><div class="hljs-button {2}" data-title="复制" onclick="hljs.copyCode(event)"></div></pre> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;整个文件的代码为：</p> 
+<pre data-index="3" class="set-code-show" name="code"><code class="hljs language-cobol"><ol class="hljs-ln" style="width:744px"><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n" data-line-number="1"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">#include <span class="hljs-string">"mainwindow.h"</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n" data-line-number="2"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">#include <span class="hljs-string">"ui_mainwindow.h"</span></div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n" data-line-number="3"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n" data-line-number="4"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">MainWindow<span class="hljs-operator">::</span>MainWindow(QWidget <span class="hljs-operator">*</span>parent)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n" data-line-number="5"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    : QMainWindow(parent)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n" data-line-number="6"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    , ui(new Ui<span class="hljs-operator">::</span>MainWindow)</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n" data-line-number="7"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">{</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n" data-line-number="8"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    ui-<span class="hljs-operator">&gt;</span>setupUi(this);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n" data-line-number="9"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    connect(ui-<span class="hljs-operator">&gt;</span>pushButton, <span class="hljs-operator">&amp;</span>QPushButton<span class="hljs-operator">::</span>clicked, this, <span class="hljs-operator">&amp;</span>MainWindow<span class="hljs-operator">::</span>showMinimized);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n" data-line-number="10"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    connect(ui-<span class="hljs-operator">&gt;</span>pushButton_<span class="hljs-number">2</span>, <span class="hljs-operator">&amp;</span>QPushButton<span class="hljs-operator">::</span>clicked, this, <span class="hljs-operator">&amp;</span>MainWindow<span class="hljs-operator">::</span>showMaximized);</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n" data-line-number="11"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">}</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n" data-line-number="12"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line"> </div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n" data-line-number="13"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">MainWindow<span class="hljs-operator">::</span>~MainWindow()</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n" data-line-number="14"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">{</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n" data-line-number="15"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">    <span class="hljs-keyword">delete</span> ui;</div></div></li><li><div class="hljs-ln-numbers"><div class="hljs-ln-line hljs-ln-n" data-line-number="16"></div></div><div class="hljs-ln-code"><div class="hljs-ln-line">}</div></div></li></ol></code><div class="hljs-button {2}" data-title="复制" onclick="hljs.copyCode(event)"></div></pre> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;这时我们再运行程序，点击第一个按钮会最小化窗口，点击第二个按钮会最大化窗口，对应connect函数中连接的效果。</p> 
+<p></p> 
+<h2 id="%E5%9B%9B%E3%80%81%E4%BB%8B%E7%BB%8DUSB%E5%8D%8F%E8%AE%AE"><a name="t25"></a><span style="color:#956fe7;">四、介绍USB协议</span></h2> 
+<h3 id="1.%20%E4%BB%80%E4%B9%88%E6%98%AFUSB"><a name="t26"></a>1. 什么是USB</h3> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;USB虽然我们都在用，但是很少有人真正了解它的工作原理，并且这个项目我们使用的是STM32的USB-FS硬件通信，所以我们需要先了解USB和它的协议是什么（真正硬啃完全部USB协议内容是需要大量的时间【我前前后后看USB相关的内容花了不止两周】，并且需要较好的英文功底【看原版协议文档】，因为我并不需要明晰全部的USB协议，我只用到USB内CDC协议，因此我会更注意CDC的内容），这里我主要贴一些<a class="link-info" href="https://zh.wikipedia.org/wiki/USB" rel="nofollow" title="wikipedia的内容">wikipedia的内容</a>（需要一些魔法才能打开，<s>东西实在是太多我不想写了</s>）：</p> 
+<blockquote> 
+ <p><strong>通用串行总线</strong>（英语：<strong>U</strong>niversal&nbsp;<strong>S</strong>erial&nbsp;<strong>B</strong>us，缩写：<strong>USB</strong>）是连接<a href="https://zh.wikipedia.org/wiki/%E8%AE%A1%E7%AE%97%E6%9C%BA" rel="nofollow" title="计算机">计算机</a>系统与<a href="https://zh.wikipedia.org/wiki/%E5%A4%96%E9%83%A8%E8%AE%BE%E5%A4%87" rel="nofollow" title="外部设备">外部设备</a>的一种<a href="https://zh.wikipedia.org/wiki/%E4%B8%B2%E8%A1%8C%E7%AB%AF%E5%8F%A3" rel="nofollow" title="串口">串口</a><a href="https://zh.wikipedia.org/wiki/%E6%80%BB%E7%BA%BF" rel="nofollow" title="总线">总线</a>标准，也是一种<a href="https://zh.wikipedia.org/wiki/%E8%BE%93%E5%85%A5%E8%BE%93%E5%87%BA" rel="nofollow" title="输入输出">输入输出</a><a href="https://zh.wikipedia.org/wiki/%E6%8E%A5%E5%8F%A3" rel="nofollow" title="接口">接口</a>的技术规范，被广泛地应用于<a href="https://zh.wikipedia.org/wiki/%E4%B8%AA%E4%BA%BA%E7%94%B5%E8%84%91" rel="nofollow" title="个人电脑">个人电脑</a>和<a href="https://zh.wikipedia.org/wiki/%E7%A7%BB%E5%8A%A8%E8%AE%BE%E5%A4%87" rel="nofollow" title="移动设备">移动设备</a>等<a href="https://zh.wikipedia.org/wiki/%E4%BF%A1%E6%81%AF%E5%8F%8A%E9%80%9A%E4%BF%A1%E6%8A%80%E6%9C%AF" rel="nofollow" title="信息通讯">信息通讯</a>产品，并扩展至<a href="https://zh.wikipedia.org/wiki/%E6%91%84%E5%BD%B1%E5%99%A8%E6%9D%90" rel="nofollow" title="摄影器材">摄影器材</a>、<a href="https://zh.wikipedia.org/wiki/%E6%95%B0%E5%AD%97%E7%94%B5%E8%A7%86" rel="nofollow" title="数字电视">数字电视</a>（<a href="https://zh.wikipedia.org/wiki/%E6%9C%BA%E9%A1%B6%E7%9B%92" rel="nofollow" title="机顶盒">机顶盒</a>）、<a href="https://zh.wikipedia.org/wiki/%E6%B8%B8%E6%88%8F%E6%9C%BA" rel="nofollow" title="游戏机">游戏机</a>等其它相关领域。</p> 
+ <p>多媒体电脑刚问世时，外接式设备的传输接口各不相同，如打印机只能接<a href="https://zh.wikipedia.org/wiki/%E4%B8%A6%E5%88%97%E5%9F%A0" rel="nofollow" title="LPT">LPT</a>、调制解调器只能接<a href="https://zh.wikipedia.org/wiki/RS-232" rel="nofollow" title="RS232">RS232</a>、鼠标键盘只能接<a href="https://zh.wikipedia.org/wiki/PS/2%E6%8E%A5%E5%8F%A3" rel="nofollow" title="PS/2">PS/2</a>等。繁杂的接口系统，加上必须安装驱动程序并重启才能使用的限制，都会造成用户的困扰。因此，创造出一个统一且支持易插拔的外接式传输接口，便成为无可避免的趋势，USB应运而生。</p> 
+ <p>最新一代的USB是USB4，传输速度为40Gbit/s。物理接头USB Type-A、Type-B接头分正反面，新型<a href="https://zh.wikipedia.org/wiki/USB_Type-C" rel="nofollow" title="USB Type-C">USB Type-C</a>接头不分正反。</p> 
+</blockquote> 
+<p></p> 
+<h3 id="2.%20USB%E7%9A%84%E5%8F%91%E5%B1%95%E5%8E%86%E5%8F%B2"><a name="t27"></a>2. USB的发展历史</h3> 
+<blockquote> 
+ <p>USB最初是由<a href="https://zh.wikipedia.org/wiki/%E8%8B%B1%E7%89%B9%E5%B0%94" rel="nofollow" title="英特尔">英特尔</a>与<a href="https://zh.wikipedia.org/wiki/%E5%BE%AE%E8%BD%AF" rel="nofollow" title="微软">微软</a>倡导发起，最大的特点是尽可能地实现<a href="https://zh.wikipedia.org/wiki/%E7%83%AD%E6%8F%92%E6%8B%94" rel="nofollow" title="热插拔">热插拔</a>和<a href="https://zh.wikipedia.org/wiki/%E5%8D%B3%E6%8F%92%E5%8D%B3%E7%94%A8" rel="nofollow" title="即插即用">即插即用</a>。当设备插入时，主机<a href="https://zh.wikipedia.org/wiki/%E6%9E%9A%E4%B8%BE" rel="nofollow" title="枚举">枚举</a>到此设备并加载所需的<a href="https://zh.wikipedia.org/wiki/%E9%A9%B1%E5%8A%A8%E7%A8%8B%E5%BA%8F" rel="nofollow" title="驱动程序">驱动程序</a>，因此其在使用上远比<a href="https://zh.wikipedia.org/wiki/%E5%A4%96%E8%AE%BE%E7%BB%84%E4%BB%B6%E4%BA%92%E8%BF%9E%E6%A0%87%E5%87%86" rel="nofollow" title="PCI">PCI</a>和<a href="https://zh.wikipedia.org/wiki/%E5%B7%A5%E4%B8%9A%E6%A0%87%E5%87%86%E7%BB%93%E6%9E%84" rel="nofollow" title="ISA">ISA</a>等总线方便。</p> 
+ <p>USB在速度上远比<a href="https://zh.wikipedia.org/wiki/%E5%B9%B6%E8%A1%8C%E7%AB%AF%E5%8F%A3" rel="nofollow" title="并行端口">并行端口</a>（例如EPP、LPT）与<a href="https://zh.wikipedia.org/wiki/%E4%B8%B2%E8%A1%8C%E6%8E%A5%E5%8F%A3" rel="nofollow" title="串行接口">串行接口</a>（例如RS-232）等传统电脑用标准总线快上许多。USB 1.1（USB 2.0 FullSpeed）的最大传输速率为12Mbps，USB 2.0（USB 2.0 HiSpeed）为480Mbps，USB 3.0（USB 3.2 Gen1） 为 5Gbps，USB 3.1（USB 3.2 Gen2x1） 为 10Gbps，而USB 3.2（USB 3.2 Gen2x2）更达20Gbps，以及近期发表的USB 4.0，其速度可达40Gbps。</p> 
+ <p>USB的设计为<a href="https://zh.wikipedia.org/w/index.php?title=%E9%9D%9E%E5%AF%B9%E7%A7%B0%E5%BC%8F&amp;action=edit&amp;redlink=1" rel="nofollow" title="非对称式">非对称式</a>的，它由一个<a href="https://zh.wikipedia.org/wiki/%E4%B8%BB%E6%A9%9F" rel="nofollow" title="主机">主机</a>控制器和若干通过<a href="https://zh.wikipedia.org/wiki/USB%E9%9B%86%E7%BA%BF%E5%99%A8" rel="nofollow" title="集线器">集线器</a>设备以树形连接的<a href="https://zh.wikipedia.org/wiki/%E8%AE%BE%E5%A4%87" rel="nofollow" title="设备">设备</a>组成。一个控制器下最多可以有5级Hub，包括Hub在内，最多可以连接128个设备，因为在设计时是使用7比特<a href="https://zh.wikipedia.org/wiki/%E5%AE%9A%E5%9D%80%E6%AC%84%E4%BD%8D" rel="nofollow" title="寻址字段">寻址字段</a>，二的七次方就等于128，一般人说USB连接127个是指连接（某一设备）时需扣除一个连接主机的USB接头，而一台计算机可以同时有多个控制器。和<a href="https://zh.wikipedia.org/wiki/%E5%BA%8F%E5%88%97%E5%91%A8%E9%82%8A%E4%BB%8B%E9%9D%A2" rel="nofollow" title="SPI">SPI</a>-<a href="https://zh.wikipedia.org/wiki/SCSI" rel="nofollow" title="SCSI">SCSI</a>等标准不同，USB集线器不需要终结器。</p> 
+ <p>USB可以连接的<a href="https://zh.wikipedia.org/wiki/%E5%A4%96%E8%AE%BE" rel="nofollow" title="外设">外设</a>有<a href="https://zh.wikipedia.org/wiki/%E9%BC%A0%E6%A0%87" rel="nofollow" title="鼠标">鼠标</a>、<a href="https://zh.wikipedia.org/wiki/%E9%94%AE%E7%9B%98" rel="nofollow" title="键盘">键盘</a>、<a href="https://zh.wikipedia.org/wiki/%E6%B8%B8%E6%88%8F%E6%89%8B%E6%9F%84" rel="nofollow" title="游戏手柄">游戏手柄</a>、<a href="https://zh.wikipedia.org/wiki/%E6%B8%B8%E6%88%8F%E6%9D%86" rel="nofollow" title="游戏杆">游戏杆</a>、<a href="https://zh.wikipedia.org/wiki/%E6%89%AB%E6%8F%8F%E4%BB%AA" rel="nofollow" title="扫描仪">扫描仪</a>、<a href="https://zh.wikipedia.org/wiki/%E6%95%B0%E7%A0%81%E7%9B%B8%E6%9C%BA" rel="nofollow" title="数字相机">数字相机</a>、<a href="https://zh.wikipedia.org/wiki/%E6%89%93%E5%8D%B0%E6%9C%BA" rel="nofollow" title="打印机">打印机</a>、<a href="https://zh.wikipedia.org/wiki/%E7%A1%AC%E7%9B%98" rel="nofollow" title="硬盘">硬盘</a>和<a href="https://zh.wikipedia.org/wiki/%E7%BD%91%E5%8D%A1" rel="nofollow" title="网卡">网卡</a>等部件。对数字相机这样的多媒体外设USB已经是缺省接口；由于大大简化与计算机的连接，USB也逐步取代<a href="https://zh.wikipedia.org/wiki/%E5%B9%B6%E8%A1%8C%E6%8E%A5%E5%8F%A3" rel="nofollow" title="并行接口">并行接口</a>成为打印机的主流连接方式之一。2004年已经有超过1亿台USB设备；到2007年时，高清晰度数字视频外设是仅有的USB未能染指的外设类别，因为他需要更高的传输速率，不过USB3.1和2019年USB4的问世，高清晰度数字视频外设和外接式显卡也能在USB播放。</p> 
+</blockquote> 
+<p></p> 
+<h3 id="3.%20%E5%85%A8%E9%80%9F%E5%92%8C%E9%AB%98%E9%80%9FUSB%E7%9A%84%E9%80%9A%E4%BF%A1%E5%8D%8F%E8%AE%AE"><a name="t28"></a>3. 全速和高速USB的通信协议</h3> 
+<blockquote> 
+ <p>现USB标准中，按照速度等级和连接方式分为以下七种版本。注意USB-IF目前正式的主版本号只有USB 2.0和USB 3.2两个。</p> 
+</blockquote> 
+<div class="table-box"><table align="center"><tbody><tr><th colspan="4">USB版本</th><th rowspan="2">传输速度 <p>(bit)</p> </th><th rowspan="2">理论速度 <p>(Byte)</p> </th></tr><tr><th colspan="2">目前官方版本名</th><th>官方市场代号</th><th>原名</th></tr><tr><td rowspan="3">USB 2.0</td><td>LowSpeed</td><td>低速<br> Low Speed</td><td>USB 1.0</td><td>1.5Mbps</td><td>0.1875MB/s</td></tr><tr><td>FullSpeed</td><td>全速<br> Full Speed</td><td>USB 1.1</td><td>12Mbps</td><td>1.5MB/s</td></tr><tr><td>HiSpeed</td><td>高速<br> Hi-Speed</td><td>USB 2.0</td><td>480Mbps</td><td>60MB/s</td></tr><tr><td rowspan="3">USB 3.2</td><td>Gen 1</td><td>超高速USB5Gbps<br> SuperSpeed USB</td><td>USB 3.1GEN1</td><td>5Gbps</td><td>500MB/s</td></tr><tr><td>Gen 2</td><td>超高速USB 10Gbps<br> SuperSpeed USB 10Gbps</td><td>USB 3.1GEN2</td><td>10Gbps</td><td>1212.12MB/s</td></tr><tr><td>Gen 2x2</td><td>超高速USB 20Gbps<br> SuperSpeed USB 20Gbps</td><td>N/A</td><td>20Gbps</td><td>2424.24MB/s</td></tr><tr><td rowspan="1">USB4</td><td></td><td></td><td></td><td>40Gbps</td><td>5GB/s</td></tr></tbody></table></div> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;协议具体可以看看这些别人总结的内容，个人觉得还不错：<a class="link-info" href="https://zhuanlan.zhihu.com/p/346655501" rel="nofollow" title="USB 协议核心概念与实践">USB 协议核心概念与实践</a>、<a class="link-info" href="https://blog.csdn.net/zhoutaopower/article/details/82083043" title="USB 协议分析">USB 协议分析</a>、<a class="link-info" href="https://www.bilibili.com/video/BV1sy4y1n7d9" rel="nofollow" title="《USB技术应用与开发》第一讲">《USB技术应用与开发》第一讲</a>、<a class="link-info" href="https://www.bilibili.com/video/BV1fV411q7Bv" rel="nofollow" title="《USB技术应用与开发》第二讲">《USB技术应用与开发》第二讲</a>、<a class="link-info" href="https://www.bilibili.com/video/BV1jA411u7bz" rel="nofollow" title="USB技术应用与开发》第五讲">USB技术应用与开发》第五讲</a>、<a class="link-info" href="https://www.bilibili.com/video/BV16z4y1m7EQ" rel="nofollow" title="《USB技术应用与开发》第七讲">《USB技术应用与开发》第七讲</a>。以及有条件的大佬想仔细钻研的可以去看<a class="link-info" href="https://www.usb.org/document-library/usb-20-specification" rel="nofollow" title="原版文档">原版文档</a>，连接打开右侧.zip文件下载后里面一大堆慢慢阅读（<s>欣赏</s>）。其实最开始我还不清楚我最终是用哪一种协议，因为HID需要不停的发送信息（7ms的定时询问），对STM32而言是个负担，因此在看了沁恒微电子的视频和了解了STM提供的USB例程后才决定使用CDC协议方式。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;这里我要强调一点，根据官方文档（risistor_ecn.pdf）内的描述（如图4.3.1），USB-FS和USB-LS的区分方式是依赖在D+和D-差分线上不同位置的上拉电阻来实现的，在设计/购买STM32开发板时一定要拿到原理图看看这个 1.5KΩ 的 Rpu电阻 是否合理存在，否则容易出现问题！（<s>又是一个不要问我为什么知道的环节</s>，当然如果你要用外接PHY做High Speed版本的USB通信就当我没说）</p> 
+<p><img alt="" height="771" src="https://img-blog.csdnimg.cn/4fb4fd7742034ede8deba65bf9083f40.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="937"></p> 
+<p style="text-align:center;">&nbsp;图 4.3.1 低速和全速上拉电阻连接方式图</p> 
+<p></p> 
+<h3 id="4.%20USB%E5%9B%BA%E5%AE%9A%E7%9A%84%E9%80%9A%E4%BF%A1%E6%96%B9%E6%A1%88"><a name="t29"></a>4. USB固定的通信方案</h3> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;如果你没接触过USB协议，那么你可能看到上面我说CDC协议时会一脸懵，这里我们就来讲一下USB固定的一些通信协议，下面这张图4.4.1是从STM32官方文档库中截取的，文档名称为<a class="link-info" href="https://www.st.com/zh/embedded-software/stsw-stm32046.html" rel="nofollow" title="um1021">um1021</a>，当然你也可以直接去看<a class="link-info" href="https://www.keil.com/pack/doc/mw/USB/html/index.html" rel="nofollow" title="Keil提供的文档">Keil提供的文档</a>。</p> 
+<p><img alt="" height="998" src="https://img-blog.csdnimg.cn/879a7783539d4261bdf8c337cd14a447.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="988"></p> 
+<p style="text-align:center;">&nbsp;图 4.4.1 USB Device classes</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;图中提到的协议包括：<a class="link-info" href="https://www.usb.org/hid" rel="nofollow" title="Human Interface Devices">Human Interface Devices</a>（HID）、<a class="link-info" href="https://www.usb.org/sites/default/files/usbmassbulk_10.pdf" rel="nofollow" title="Mass Storage Class">Mass Storage Class</a>（MSC）、<a class="link-info" href="https://www.usb.org/sites/default/files/DFU_1.1.pdf" rel="nofollow" title="Device Firmware Upgrade">Device Firmware Upgrade</a>（DFU）、Audio&nbsp;、<a class="link-info" href="https://www.usb.org/document-library/class-definitions-communication-devices-12" rel="nofollow" title="Communication Device Class">Communication Device Class</a>（CDC）。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;HID为人机交互类，一般包括键盘、鼠标和游戏控制器等；MSC为大容量存储类，一般包括U盘、硬盘和SD卡等；DFU为设备固件升级类，一般用于更新设备固件；Audio为音频类，用于传输音频信息；CDC为信息流通设备类，一般可用于RS-232和网络（Ethernet）。当然USB Class并没有全部都列出来，这里列出的都是ST官方固件里有支持的类别，以方便我们后续的开发。从这里我们可以看出，如果想做STM32下位机与电脑上位机通信，最靠近已有的成熟方案（UART，串口通信）就是CDC类别下的RS-232，因此这个项目将用ST官方提供的CDC例程为基础修改代码来实现上下位机的控制和通信。</p> 
+<p></p> 
+<h2 id="%E4%BA%94%E3%80%81%E4%BB%8B%E7%BB%8D%E7%94%B5%E8%B7%AF%E8%AE%BE%E8%AE%A1"><a name="t30"></a><span style="color:#956fe7;">五、介绍电路设计</span></h2> 
+<h3 id="1.%20STM32F407ZGT6%E6%A0%B8%E5%BF%83%E6%9D%BF%E7%9A%84%E7%94%B5%E8%B7%AF%E8%AE%BE%E8%AE%A1"><a name="t31"></a>1. STM32F407ZGT6核心板的电路设计</h3> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;&nbsp;这个项目经过几轮更新，在最近终于自己重新设计了核心板，更符合自己的需求（<s>不用再到处乱七八糟的飞线了</s>）。首先需要知道一点是：每种芯片都<span style="color:#ff9900;">必有</span>对应的芯片手册（DataSheet），大部分文档都可以在设计/生产方的官网找到，当然也有一些<a class="link-info" href="https://www.alldatasheet.com/" rel="nofollow" title="整合的网站">整合的网站</a>可以直接查询，很方便，对应的STM32F407ZG芯片也有对应的文档可以在官网找到。STM32微处理器的核心板设计有<a class="link-info" href="http://www.openedv.com/docs/boards/stm32/zdyz_stm32f407_explorer.html" rel="nofollow" title="正点原子">正点原子</a>的可以参考，当然我更喜欢读<a class="link-info" href="https://www.st.com/zh/microcontrollers-microprocessors/stm32f407zg.html#documentation" rel="nofollow" title="官方文档">官方文档</a>，因为但凡是好点的芯片一般都会有官方设计案例，只需要照葫芦画瓢然后按照自己的需求再做修改就好。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;如果你不想自己设计那就直接买某宝核心板，如果你想学习如何设计PCB，那么学习用的B站就是一个很好的选择，打开B站直接<a class="link-info" href="https://search.bilibili.com/all?keyword=pcb" rel="nofollow" title="搜索pcb">搜索pcb</a>就有一大堆教程，随便找个2或4层板设计跟着设计一遍就基本入门了。因为STM32F4主频不高，所以还不算涉及高速信号设计，一般来说超过0.5GHz就需要考虑高速信号走线的问题，各种走线长宽、走线长度差、走线之间的间隔、铺铜厚度、多层穿孔、电源隔离和信号屏蔽等一系列可能产生<a class="link-info" href="https://baike.baidu.com/item/EMI/16265805" rel="nofollow" title="EMI">EMI</a>的问题都需要纳入设计考虑。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;说远了，下面我们简单看看STM32F407ZG的电路设计，一般来说主控芯片有几个比较重要的电路部分：</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1. 首先就是最重要的供电部分。没有电，芯片就不能使用；没有良好的供电，芯片就难以发挥最佳性能，下面我们看看官方文档给的供电设计参考，如图5.1.1：</p> 
+<p style="text-align:center;"><img alt="" height="1200" src="https://img-blog.csdnimg.cn/39be053ec1bb48dcb3d8d51031604151.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="1117"></p> 
+<p style="text-align:center;">&nbsp;图5.1.1 STM32F407 官方文档电源设计</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;从图中可以大致分为三个部分：电池供电部分、固定的电源端口与外接电容口和ADC电源，VBAT通过一个电源切换器连接到芯片内的备用电路部分；VCAP_1和VCAP_2需要分别连接1个2.2uF电容；每一个VDD（1~15）电源都需要连接一个100nF电容，在任意电源端口还需要一个4.7uF电容；ADC转换单元的参考电压如图所示需要两路100nF和1uF电容。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;2. 一般来说为了更好的性能和稳定性，会使用外接晶振替代内部晶振（控制温漂和更准确的频率），这一部分官方文档也有说明（5.3.8部分），如图5.1.2和5.1.3所示：</p> 
+<p><img alt="" height="339" src="https://img-blog.csdnimg.cn/124667fb1e9f4d1bbd37ec0ddff46130.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="990"></p> 
+<p style="text-align:center;">图 5.1.2 High Speed External电路</p> 
+<p><img alt="" height="339" src="https://img-blog.csdnimg.cn/183035eb905b4d179f42e3aebd325b39.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="959"></p> 
+<p style="text-align:center;">&nbsp;图 5.1.3 Low Speed External电路</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;文档中还有对应的晶振参数、电容参数等，这里我就不赘述，有需要的可以自己去看看。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;3. 大多数芯片都会有重启功能，STM32也不例外，从文档中我们也可以看到参考设计，如图5.1.4所示：</p> 
+<p><img alt="" height="1200" src="https://img-blog.csdnimg.cn/8449c33e62c44055b620e35e95703d08.png?x-oss-process=image/watermark,type_d3F5LXplbmhlaQ,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="1097"></p> 
+<p style="text-align:center;">&nbsp;图 5.1.4 NRST电路</p> 
+<p></p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;从图中可以知道，STM32F407芯片内部已有一个上拉电阻Rpu，阻值为40KΩ，我们只需要在外部设计一个触动按钮和滤波电容（用于消除按键抖动）即可。</p> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;STM32核心电路大致如此，其他部分可按需设计。</p> 
+<p></p> 
+<h3 id="2.%20%E5%B8%B8%E7%94%A8%E7%9A%84%E8%AE%BE%E8%AE%A1%E8%BD%AF%E4%BB%B6"><a name="t32"></a>2. 常用的设计软件</h3> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;目前常用于设计电路用的国外软件有：Mentor Graphics 的 PADS、Cadence 的 ALLEGRO和Altium 的 Altium Designer。国产目前有一个还不错的、用于设计不太复杂电路的在线EDA：立创EDA，他最大的优点就是：免费，并且很多器件都是自带PCB封装图和3D装配图，用来预览效果不错。</p> 
+<p></p> 
+<h3 id="3.%20%E8%AE%BE%E8%AE%A1%E4%B8%80%E4%B8%AA%E7%AE%80%E5%8D%95%E7%9A%84%E9%A9%B1%E5%8A%A8%E7%94%B5%E5%8E%8B%E8%BD%AC%E6%8D%A2%E7%94%B5%E8%B7%AF"><a name="t33"></a>3. 设计一个简单的驱动电压转换电路</h3> 
+<p>&nbsp; &nbsp; &nbsp; &nbsp;STM32芯片一般驱动在3.3V及以下，很多外围器件的驱动电压往往在5V及以上，这时控制信号或采集信号需要进行电压转换。针对双向电压转换，如果对价格不敏感，可直接使用双向电平转换芯片，对价格敏感的，可以参考<a class="link-info" href="https://blog.csdn.net/gouxf_0219/article/details/84787290" title="IIC双向电平转换电路">IIC双向电平转换电路</a>，单路只需要一个NMOS和2~3个电阻即可；针对单向电压转换，低转高电压用三极管或MOS管驱动即可，高转低直接电阻分压或接稳压管即可。</p> 
+<p></p> 
+<p>下一节<span style="color:#ff9900;">程序开发(3/4)</span>我会将第一节<span style="color:#fe2c24;">简介(1/4)</span>提到的<strong>思考结论</strong>和这一节<span style="color:#4da8ee;">基础知识(2/4)</span>提到的所有知识串起来，形成这个项目的解决思路。</p> 
+<p></p> 
+<p></p> 
+<h2 id="%E7%9B%B8%E5%85%B3%E8%BF%9E%E6%8E%A5%EF%BC%9A"><a name="t34"></a>相关连接：</h2> 
+<p><a href="https://blog.csdn.net/u013588214/article/details/120920077?" title="去简介(1/4)">去简介(1/4)</a>、<a href="https://blog.csdn.net/u013588214/article/details/120928013" title="去基础知识(2/4)">去基础知识(2/4)</a>、<a href="https://blog.csdn.net/u013588214/article/details/120928176" title="去程序开发(3/4)">去程序开发(3/4)</a>、<a href="https://blog.csdn.net/u013588214/article/details/120928212" title="去联合调试(4/4)">去联合调试(4/4)</a></p> 
+<p>好用的工具网站推荐</p> 
+<p></p> 
+<p></p> 
+<p></p> 
+<p></p> 
+<p></p>
+                </div><div data-report-view="{&quot;mod&quot;:&quot;1585297308_001&quot;,&quot;spm&quot;:&quot;1001.2101.3001.6548&quot;,&quot;dest&quot;:&quot;https://blog.csdn.net/u013588214/article/details/120928013&quot;,&quot;extend1&quot;:&quot;pc&quot;,&quot;ab&quot;:&quot;new&quot;}"><div></div></div>
+        </div>
+            </div> 
+            
+              </main>     
+       </body>
+       </html>
+    
+            

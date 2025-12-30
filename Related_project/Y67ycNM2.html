@@ -1,0 +1,61 @@
+
+    <html lang="zh-CN">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+      <body class="nodata " style="">    
+     
+        <main style="width:100%">  
+        <div class="blog-content-box"> 
+            <div class="article-title-box">
+                <h1 class="title-article" id="articleContentId">Qt5+STM32F407+步进电机 | 通过电脑控制步进电机实现：6+2通道、速度可变、运动精确步数的教程——简介（1/4）</h1>
+            </div><div id="article_content" class="article_content clearfix">
+        <link rel="stylesheet" href="https://csdnimg.cn/release/blogv2/dist/mdeditor/css/editerView/kdoc_html_views-1a98987dfd.css">
+        <link rel="stylesheet" href="https://csdnimg.cn/release/blogv2/dist/mdeditor/css/editerView/ck_htmledit_views-044f2cf1dc.css">
+                <div id="content_views" class="htmledit_views">
+                    <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 这次项目的讲解分为4各部分，分别是<span style="color:#fe2c24;">简介(1/4)</span>、<span style="color:#4da8ee;">基础知识(2/4)</span>、<span style="color:#ff9900;">程序开发(3/4)</span>和<span style="color:#1c7331;">联合调试(4/4)</span><span style="color:#0d0016;">，</span><span style="color:#494949;">这一次内容属于</span><span style="color:#fe2c24;">简介(1/4)</span><span style="color:#494949;">，可以对应文章标题（↑）快速定位目前处于哪一讲解环节。</span></p> 
+<h2><a name="t0"></a><span style="color:#494949;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 首先是一堆废话：</span></h2> 
+<p style="text-align:center;"><img alt="" height="230" src="https://img-blog.csdnimg.cn/3c5469163c304bf180218505ada2fe72.jpg?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_18,color_FFFFFF,t_70,g_se,x_16" width="365"></p> 
+<h3 style="text-align:center;"><a name="t1"></a>&nbsp;<span style="color:#1c7331;"><strong><span style="background-color:#f9eda6;">什么？我打开你的博客是打算学些技术，你就给我看这？嗯???</span></strong></span></h3> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 哈哈哈，这只是在吐槽我以前在<s>学习交流</s>群里问问题时遇到的情况（估计大多数人都遇到过）（<s>虽然宝宝心里苦，但还是默默地打开了搜索引擎去寻找答案</s>）。很多人以前在遇到比较棘手的问题时，第一反应多是找身边经验丰富的大佬请教（比如说：我）（<s>别误解了，不是说我是大佬，而是说我去请教大佬</s>），毕竟他们<span style="color:#faa572;"><span style="background-color:#494949;">走过很多路、试过大量错、踩过无数坑</span></span>，那肚子里肯定还是有点东（mo）西（shui）的。但很多时候大佬会忙得只是寥寥地点拨几句，如果能从他们的话中<span style="color:#c7e6ea;"><span style="background-color:#494949;">听懂叙述、理清逻辑、抓住关键并悟出问题</span></span>，那问题基本就能得到解决，说实话，其实很多时候还是会有点半迷糊不迷糊的，这时候只有从实践中慢慢去理解了。没有必要为了吃苦而去吃苦，但学到老活到老，不懂的东西太多，想学的东西更多，因此该吃的苦还是必须要吃的，不然怎么会真正学到有价值的知识呢？（<s>每日鸡汤 1/1</s>）</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 所以我用博客记录我的开（chi）发（ku）历（guo）程（cheng）的目很简单：</p> 
+<p>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp; 1. 给遇到问题就自力更生默默打开搜索引擎去解决问题的人<u>提供一些<strong><span style="color:#fe2c24;">思路</span></strong></u>。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2. 给打算开始类似项目或者想学习相关技术的的人提供一些<u><strong><span style="color:#fe2c24;">有价值</span></strong>的参考</u>。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3. <strong><u><span style="color:#fe2c24;">总结归纳</span></u></strong>自己做过的东西，方便以后做类似开发时快速上手。</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 这个项目我会从<span style="color:#79c6cd;"><strong>相对基础</strong></span>的地方开始讲，尽量做到让刚入门的小白都能听懂，但我不会也不能事无巨细，因此更基础的东西还是要（<s><em>靠大家自己去自力更生默默打开搜索引擎</em></s>）（<s>bushi</s>）自己去找更基础的教程学习（比如开发用到的C和C++语言等）。</p> 
+<p></p> 
+<p></p> 
+<h3><a name="t2"></a><strong><span style="color:#4da8ee;">废话不多说，我们就开始吧！</span></strong></h3> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>此次开发用到的设备：</strong><span style="color:#956fe7;">带USB的电脑一台</span>（<s>这不是废话吗</s>）、<span style="color:#956fe7;">STM32F407ZGT6单片机</span>（国产替代或者其他符合要求(*1)的型号都可）<span style="color:#956fe7;">、1~8套 闭环步进电机+配套驱动器</span>（脉冲驱动型）（总线驱动型驱动器请忽略此文）（<s>有钱真好</s>）</p> 
+<p></p> 
+<p>*1 ： 如果需要控制6+2通道的电机，那么片上资源需带有全速（USB1.X）或高速(USB2.0)的USB控制器（有UART+串口通信芯片也可以）、DMA控制器*2（可控制定时器）、定时器*8（可输出PWM脉冲信号）、定时器*4（可配置为主从模式），可用GPIO数量建议不低于80pin。</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>这次项目的需求：</strong><span style="color:#b95514;">通过电脑（各类系统都可，只要能装上Qt）的软件界面，将电机控制信息通过某种方式发送给STM32F407单片机</span>；<span style="color:#1c7331;">单片机对电脑传递的信息进行理解后驱动自身的硬件去产生脉冲，脉冲信号通过连线被发送到驱动器上，驱动器解析脉冲信号后控制电机运动</span>；<span style="color:#1a439c;">并且单片机通过获取一些外设传感器去了解电机的极限运动状态，并将相关的信息实时更新到电脑上</span>。（如图1）</p> 
+<p style="text-align:center;"><img alt="" height="226" src="https://img-blog.csdnimg.cn/57b558861ade444baeb8287e2aea8ddb.png?x-oss-process=image/watermark,type_ZHJvaWRzYW5zZmFsbGJhY2s,shadow_50,text_Q1NETiBAT29sb25nTGVtb24=,size_20,color_FFFFFF,t_70,g_se,x_16" width="548"></p> 
+<p style="text-align:center;">图1</p> 
+<p></p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <strong>思考结论：</strong>（细节后面说，直接说结果，看不懂不着急，后面会解释）</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1.<span style="color:#1c7331;"> </span><span style="color:#b95514;">电脑软件通信</span>：Qt中QSerialPort类</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2. <span style="color:#b95514;">上下位机通信协议</span>：USB-CDC模拟串口通信（全速USB 12Mbps，稍微快于UART）</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 3. <span style="color:#1c7331;">脉冲生成硬件配置</span>：2路双缓冲DMA+TIM、2路主 32bit从 TIM、2路主 16bit从 TIM、2路中断型 TIM（除了双循环DMA+TIM模式，其他方式由于都需要在两次脉冲间产生中断来更新计步，因此只适合于对精准度要求不特别苛刻的情况，理论上前6个通道的脉冲可以产生无限数量、频率可变的脉冲，一般是驱动丝杠这类脉冲需求可能接近无限多的情景，最后2个通道的脉冲可以产生有限数量、频率不太快的脉冲，一般是驱动有限角度的转轴。</p> 
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4. <span style="color:#1a439c;">限位获取</span>：npn或pnp型光电开关 或 带绝对定位的光、磁栅尺。</p> 
+<p></p> 
+<p>下一节<span style="color:#4da8ee;">基础知识(2/4)</span><span style="color:#494949;">我会详细讲解这一节所提到的大部分重要关键词。</span></p> 
+<p></p> 
+<p></p> 
+<h2><a name="t3"></a>相关连接：</h2> 
+<p><a href="https://blog.csdn.net/u013588214/article/details/120920077?" title="去简介(1/4)">去简介(1/4)</a>、<a class="link-info" href="https://blog.csdn.net/u013588214/article/details/120928013" title="去基础知识(2/4)">去基础知识(2/4)</a>、<a class="link-info" href="https://blog.csdn.net/u013588214/article/details/120928176" title="去程序开发(3/4)">去程序开发(3/4)</a>、<a class="link-info" href="https://blog.csdn.net/u013588214/article/details/120928212" title="去联合调试(4/4)">去联合调试(4/4)</a></p> 
+<p>好用的工具网站推荐</p> 
+<p></p> 
+<hr id="hr-toc">
+                </div><div data-report-view="{&quot;mod&quot;:&quot;1585297308_001&quot;,&quot;spm&quot;:&quot;1001.2101.3001.6548&quot;,&quot;dest&quot;:&quot;https://blog.csdn.net/u013588214/article/details/120920077&quot;,&quot;extend1&quot;:&quot;pc&quot;,&quot;ab&quot;:&quot;new&quot;}"><div></div></div>
+        </div>
+            </div> 
+            
+              </main>     
+       </body>
+       </html>
+    
+            
