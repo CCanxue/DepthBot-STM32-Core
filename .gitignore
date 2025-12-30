@@ -1,3 +1,13 @@
 Thesis/
 Pin_nam/
 .vscode/
+# 忽略编译生成的库文件
+*.a
+*.lib
+# 忽略 STM32 编译产生的中间文件
+Build/
+Output/
+*.o
+*.d
+*.crf
+*.axf
